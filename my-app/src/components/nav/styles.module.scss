@@ -1,0 +1,32 @@
+.sticky {
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+}
+
+.nav_scss {
+    position: relative;
+    background-color: var(--light-dark);
+    color: var(--light-white);
+    width: var(--nav-width);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    
+    flex-direction: column;
+    gap: 1em;
+
+    figure{
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    ul {
+        display: flex;
+        flex-direction: column;
+        gap: .5em;
+    }
+}

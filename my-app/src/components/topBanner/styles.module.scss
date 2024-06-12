@@ -1,0 +1,33 @@
+.topBanner_scss {
+    position: relative;
+    min-height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+    
+    color: var(--light-white);
+    background-image: url(https://cdn.intra.42.fr/coalition/cover/475/ubuntu-coalition-banner.jpg);
+
+    article {
+        background-color: #00000090;
+        width: 15em;
+        height: 12em;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        ul{
+            display: flex;
+            flex-direction: column;
+            gap: .5em;
+
+            li {
+                display: flex;
+                gap: 1em;
+                justify-content: space-between;
+            }
+        }
+    }
+}
