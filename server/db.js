@@ -1,4 +1,4 @@
-export const levels = [
+const levels = [
     {
         level: 0,
         xp_total: 0,
@@ -66,7 +66,7 @@ export const levels = [
     }
 ]
 
-export const projects = [
+const projects = [
     {
         id: 0,
         name: "Libft",
@@ -181,7 +181,7 @@ export const projects = [
     },
 ]
 
-export const projectsUserDb = [
+const projectsUserDb = [
     {
         id: 0,
         start_date: "",
@@ -311,3 +311,5 @@ export const projectsUserDb = [
         score: 0,
     },
 ]
+
+module.exports = { levels, projects, projectsUserDb };

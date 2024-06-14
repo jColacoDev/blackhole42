@@ -1,5 +1,4 @@
 import "./globals.css";
-import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
 import Nav from "@/components/nav/Nav";
 
@@ -11,11 +10,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning={true}>
         <div className="layout">
           <Nav />
           <main>
-            <Header />
             {children}
           </main>
         </div>

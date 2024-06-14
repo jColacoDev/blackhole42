@@ -1,35 +1,63 @@
-import React from 'react'
-import { cards_scss, coolText } from './styles.module.scss';
-import { projects } from '@/db';
+import React, { useState, useEffect } from 'react';
+import { cards_scss, rank_section, projects_section } from './styles.module.scss';
 
-export default function ProjectCards() {
-  
-  
-    return (
+export default function ProjectCards({ projects, myXp, myRank }) {
+    
+    const [openRanks, setOpenRanks] = useState({});
+
+    useEffect(() => {
+    if (myRank !== undefined) {
+        setOpenRanks({ [myRank]: true });
+    }
+    }, [myRank]);
+
+  const projectsByRank = projects.reduce((acc, project) => {
+    const { rank } = project;
+    if (!acc[rank]) acc[rank] = [];
+    acc[rank].push(project);
+    return acc;
+  }, {});
+
+  const toggleRank = (rank) => {
+    setOpenRanks(prevState => ({
+      ...prevState,
+      [rank]: !prevState[rank]
+    }));
+  };
+
+  const calculateNextBlackHoleDays = (projectXP) => {
+    return (Math.pow((myXp + projectXP) / 49980, 0.45) - Math.pow(myXp / 49980, 0.45)) * 483;
+  };
+
+  return (
     <section className={cards_scss}>
-
-        {projects.map((project)=>
-            <article>
-                <figure>
-                    <span>
-                        {project.name}
-                    </span>
-                </figure>
-
-                <ul>
+      {Object.keys(projectsByRank).map(rank => (
+        <div className={rank_section} key={rank}>
+          <h2 onClick={() => toggleRank(rank)}>Rank {rank}</h2>
+          <div className={projects_section} style={{ display: openRanks[rank] ? 'flex' : 'none' }}>
+            {projectsByRank[rank].map(project => {
+              const nextBlackHoleDays = calculateNextBlackHoleDays(project.xp);
+              return (
+                <article key={project.name}>
+                  <figure>
+                    <span>{project.name}</span>
+                  </figure>
+                  <ul>
                     <li><span>Project XP: </span> <span>{project.xp}</span></li>
-                    <li><span>Intra expected time: </span> <span>79</span></li>
-                    <li><span>Personal expected time: </span> <span>79</span></li>
-                    <li><span>Working Days: </span> <span>79</span></li>
-                    <li><span>Starting Date: </span> <span>79</span></li>
-                    <li><span>Expected Finish Date: </span> <span>79</span></li>
-                    <li><span>Real Finish Date: </span> <span>79</span></li>
-                    <li><span>Months: </span> <span>79</span></li>
-                    <li><span>Gained BH days: </span> <span>79</span></li>
-                    <li><span>New BHa date: </span> <span>79</span></li>
-                </ul>
-            </article>      
-        )}
+                    <li><span>Gained BH days: </span> <span>{nextBlackHoleDays.toFixed(2)}</span></li>
+                  </ul>
+
+                    <p>Grade</p>
+                  <div>
+                      <input />
+                    <button>set Score</button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </section>
-  )
+  );
 }
