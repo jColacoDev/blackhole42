@@ -27,7 +27,7 @@ export default function ProfilePage() {
           throw new Error('No token found');
         }
   
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER}/api/user`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -74,7 +74,7 @@ export default function ProfilePage() {
       };
 
       const token = localStorage.getItem('token');
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_SERVER}/api/user`, updatedUser, {
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, updatedUser, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

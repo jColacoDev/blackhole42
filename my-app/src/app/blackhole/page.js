@@ -67,7 +67,7 @@ export default function BlackholePage () {
         window.location.href = '/auth'; 
         return;
       }
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER}/api/projects`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/projects`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProjects(response.data);
@@ -94,7 +94,7 @@ export default function BlackholePage () {
       if (!token) {
         throw new Error('No token found');
       }
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER}/api/user`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

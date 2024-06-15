@@ -6,42 +6,46 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const tokenRoutes = require('./routes/token');
 const project = require('./models/project');
-require('dotenv').config();
 const { requireAuth } = require('./middleware/authMiddleware.js');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Middleware to handle JSON parsing and CORS
+app.use(express.json());
+app.use(cors());
 
+// Routes
 app.use('/api/token', tokenRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes); 
+app.use('/api/user', userRoutes);
 
+// Connect to MongoDB
 const startMongoDb = async (cloud = false) => {
     const db = cloud ? process.env.DATABASE_CLOUD : process.env.DATABASE;
-    try{
+    try {
         mongoose.set("strictQuery", false);
-        const success = await mongoose.connect(db, { })
-        
-        console.log(`DB Connected:`)
-        if(cloud) console.log(` cloud mongoDB at jColacoDev db`)
-        else console.log(` local mongoDB at ${process.env.DATABASE}`)
-        
-    } catch (error){
-        console.log('DB connection error',error)
+        await mongoose.connect(db);
+        console.log(`DB Connected:`);
+        if (cloud) console.log(` cloud mongoDB at jColacoDev db`);
+        else console.log(` local mongoDB at ${process.env.DATABASE}`);
+    } catch (error) {
+        console.log('DB connection error', error);
     }
 };
 startMongoDb(false);
 
-
 app.get('/api/projects', requireAuth, async (req, res) => {
     try {
-      const projects = await project.find({});
-      res.json(projects);
+        const projects = await project.find({});
+        res.json(projects);
     } catch (error) {
-      res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
-app.listen(process.env.PORT, () => console.log(`http server is ready at http://localhost:${process.env.PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

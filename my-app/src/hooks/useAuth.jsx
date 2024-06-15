@@ -13,7 +13,7 @@ const useAuth = () => {
         if (!token) {
           throw new Error('No token found');
         }
-        await axios.get(`${process.env.NEXT_PUBLIC_SERVER}/api/token/verifyToken`, {
+        await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/token/verifyToken`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
