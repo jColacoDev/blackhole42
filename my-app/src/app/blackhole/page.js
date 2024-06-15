@@ -64,7 +64,7 @@ export default function BlackholePage () {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        window.location.href = '/login'; 
+        window.location.href = '/auth'; 
         return;
       }
       const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER}/api/projects`, {
@@ -74,7 +74,7 @@ export default function BlackholePage () {
     } catch (error) {
       console.error('Failed to fetch projects:', error);
       if (error.response && error.response.status === 401) {
-        window.location.href = '/login';
+        window.location.href = '/auth';
       }
     }
   };
