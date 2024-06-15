@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
+const tokenRoutes = require('./routes/token');
 const project = require('./models/project');
 require('dotenv').config();
 const { requireAuth } = require('./middleware/authMiddleware.js');
@@ -12,7 +14,9 @@ app.use(cors());
 app.use(express.json());
 
 
+app.use('/api/token', tokenRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes); 
 
 const startMongoDb = async (cloud = false) => {
     const db = cloud ? process.env.DATABASE_CLOUD : process.env.DATABASE;

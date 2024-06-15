@@ -1,0 +1,109 @@
+$left-color:  #242e4d;
+$right-color: #897e79;
+$green-dark:  #35c3c1;
+$green-light: #00d6b7;
+$gray:        #8f8f8f;
+$gray-light:  #f5f6f8;
+
+// * {
+//   -webkit-font-smoothing: antialiased;
+//   text-rendering: optimizeLegibility;
+// }
+// ::placeholder { color: $gray; }
+
+.login_form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 2em;
+  gap: 1em;
+  background: rgba(black, .15);
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: -2px; left: 0;
+    height: 2px; width: 100%;
+    
+    background: linear-gradient(
+      to right,
+      $green-dark,
+      $green-light
+    );    
+  }
+
+  > div{
+    display: flex;
+    flex-direction: column;
+    gap: .1em;
+  }
+}
+
+.flex_row {
+    display: flex;
+}
+
+.lf_label {
+    width: 5em;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: .2em .5em;
+    background: $gray-light;
+    cursor: pointer;
+}
+.lf_input {
+    flex: 1;
+    padding: 1em;
+    border: 0;
+    color: $gray;
+    font-size: 1rem;
+
+    &:focus {
+        outline: none;
+        transition: transform .15s ease;
+        transform: scale(1.1);
+    }
+}
+
+.lf_submit {
+    display: block;
+    padding: 1em;
+    width: 100%;
+    background: linear-gradient(
+        to right,
+        $green-dark,
+        $green-light
+    );
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    font-size: .75em;
+    font-weight: 600;
+    text-shadow: 0 1px 0 rgba(black, .2);
+
+    &:focus {
+        outline: none;
+        transition: transform .15s ease;
+        transform: scale(1.1);
+    }
+}
+
+.lf_forgot {
+  margin-top: 1em;
+  color: $green-light;
+  font-size: .65em;
+  text-align: center;
+  position: relative;
+}
+
+.page {
+    min-height: 100%;
+    width: 100%;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+}

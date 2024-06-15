@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react'
 import { main_header } from './styles.module.scss';
 
-export default function header({myCurrentBlackHole, myLevel, myLevelPercentage, myXp}) {
+export default function Header({myCurrentBlackHole, level, level_percentage, myXp, name}) {
   
   return (
     <header className={main_header}>
       <div>
         <section>
-          Level: {myLevel}.{myLevelPercentage} | {myXp} xp | black hole: {myCurrentBlackHole}
+          Level: {level}.{level_percentage} | {myXp} xp | black hole: {myCurrentBlackHole}
         </section>
         <section>
-          <span>xpto-alu</span>
+          <span>{name}</span>
           <figure></figure>
         </section>
       </div>

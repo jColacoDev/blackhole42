@@ -45,8 +45,8 @@ export default function ProjectCards({ projects, myXp, myRank }) {
                   <ul>
                     <li><span>Project XP: </span> <span>{project.xp}</span></li>
                     <li><span>Gained BH days: </span> <span>{nextBlackHoleDays.toFixed(2)}</span></li>
+                    <li><span>Project XP: </span> <span>{project.xp}</span></li>
                   </ul>
-
                     <p>Grade</p>
                   <div>
                       <input />
