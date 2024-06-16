@@ -5,6 +5,7 @@ const { requireAuth } = require('../middleware/authMiddleware'); // Import middl
 const CoreProject = require('../models/coreProject');
 const User = require('../models/user');
 const Project = require('../models/project');
+const { default: axios } = require('axios');
 
 const router = express.Router();
 
@@ -90,7 +91,6 @@ router.get('/', async (req, res) => {
     };
 
     router.get('/coreproject', async (req, res) => {
-      console.log("here")
       try {
         const coreProjects = await CoreProject.find();
         res.status(200).json(coreProjects);
@@ -100,5 +100,39 @@ router.get('/', async (req, res) => {
       }
     });
 
+    const { Types } = require('mongoose');
+
+    router.put('/myproject/:projectId', async (req, res) => {
+      const projectId = req.params.projectId;
+      const { grade, start_date, end_date } = req.body;
+    
+      console.log("grade:", grade)
+      console.log("start_date:", start_date)
+      console.log("end_date:", end_date)
+      console.log("projectId:", projectId)
+      try {
+        // if (!Types.ObjectId.isValid(projectId)) {
+        //   console.log("here:", projectId)
+        //   return res.status(400).json({ message: 'Invalid project ID format' });
+        // }
+    
+        const updatedProject = await MyProject.findOneAndUpdate(
+          { id: projectId },
+          { grade, start_date, end_date },
+          { new: true }
+        );
+    
+        if (!updatedProject) {
+          return res.status(404).json({ message: 'Project not found' });
+        }
+    
+        res.json(updatedProject);
+      } catch (error) {
+        console.error('Error updating project:', error);
+        res.status(500).json({ message: 'Server error' });
+      }
+    });
+    
+    
 module.exports = router;
     

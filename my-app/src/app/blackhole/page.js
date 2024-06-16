@@ -47,23 +47,27 @@ export default function BlackholePage() {
   const [myCurrentBlackHole, setMyCurrentBlackHole] = useState("19/10/2024");
   const [loading, setLoading] = useState(true);
 
-  function calculateXpFromLevel() {
-    const levelPercentage = 4;
-    if (level < 0 || level >= levels.length)
+  function calculateXpFromLevel(level) {
+    const integerPart = Math.floor(level);
+    const fractionalPart = level - integerPart;
+    const levelPercentage = fractionalPart * 100;
+  
+    if (integerPart < 0 || integerPart >= levels.length)
       throw new Error('Invalid level');
-
-    const currentLevel = levels[level];
-    const nextLevel = levels[level + 1];
-
-    if (!nextLevel)
-      setMyXp(currentLevel?.xp_total);
-    else {
+  
+    const currentLevel = levels[integerPart];
+    const nextLevel = levels[integerPart + 1];
+  
+    if (!nextLevel) {
+      setMyXp(Math.round(currentLevel?.xp_total));
+    } else {
       const xpDifference = nextLevel.xp_total - currentLevel?.xp_total;
       const xpFromPercentage = (xpDifference * levelPercentage) / 100;
-      setMyXp(currentLevel?.xp_total + xpFromPercentage);
+      const totalXp = currentLevel?.xp_total + xpFromPercentage;
+      setMyXp(Math.round(totalXp));
     }
   }
-
+    
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -78,8 +82,8 @@ export default function BlackholePage() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      console.log("My Projects:", myProjectsResponse.data);
-      console.log("Core Projects:", coreProjectsResponse.data);
+      // console.log("My Projects:", myProjectsResponse.data);
+      // console.log("Core Projects:", coreProjectsResponse.data);
 
       setProjects(myProjectsResponse.data);
       setCoreProjects(coreProjectsResponse.data);
@@ -105,8 +109,8 @@ export default function BlackholePage() {
   }, [cursus_id]);
 
   useEffect(() => {
-    if (level !== 0) {
-      calculateXpFromLevel();
+    if (level) {
+      calculateXpFromLevel(level);
     }
   }, [level]);
 
@@ -164,7 +168,7 @@ export default function BlackholePage() {
             myXp={myXp}
             name={name}
           />
-          <ProjectCards projects={mergedProjects} myXp={myXp} myRank={myRank} />
+          <ProjectCards user={user} projects={mergedProjects} myXp={myXp} myRank={myRank} />
         </>
       )}
     </div>
