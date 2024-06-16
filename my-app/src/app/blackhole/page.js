@@ -1,23 +1,43 @@
 "use client"
-
-import styles from "./page.module.scss";
-import { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import TopBanner from '@/components/topBanner/TopBanner';
 import Header from "@/components/header/Header";
 import ProjectCards from "@/components/projectCards/ProjectCards";
-import { levels } from '@/db';
+import { levels } from "@/db";
 import useAuth from "@/hooks/useAuth";
 import { UserContext } from './../../providers/UserContext';
+import styles from "./page.module.scss";
 
-export default function BlackholePage () {
+// Utility function to merge projects based on id
+const mergeProjects = (coreProjects, myProjects) => {
+  const projectMap = new Map();
+
+  // Add coreProjects to the map
+  coreProjects.forEach(project => {
+    projectMap.set(project.id, { ...project });
+  });
+
+  // Merge myProjects with coreProjects
+  myProjects.forEach(project => {
+    if (projectMap.has(project.id)) {
+      projectMap.set(project.id, { ...projectMap.get(project.id), ...project });
+    } else {
+      projectMap.set(project.id, { ...project });
+    }
+  });
+
+  return Array.from(projectMap.values());
+};
+
+export default function BlackholePage() {
   useAuth();
   const { user } = useContext(UserContext);
 
   const [cursus_id, setCursus_id] = useState(0);
   const [name, setName] = useState('');
   const [projects, setProjects] = useState([]);
-  const [filteredProjects, setFilteredProjects] = useState([]);
+  const [coreProjects, setCoreProjects] = useState([]);
   const [myRank, setMyRank] = useState(0);
   const [myXp, setMyXp] = useState(0);
   const [weekly_days, setWeekly_days] = useState(0);
@@ -25,7 +45,7 @@ export default function BlackholePage () {
   const [kickoff_date, setKickoff_date] = useState('');
   const [level, setLevel] = useState(0);
   const [myCurrentBlackHole, setMyCurrentBlackHole] = useState("19/10/2024");
-  const [filterText, setFilterText] = useState('');
+  const [loading, setLoading] = useState(true);
 
   function calculateXpFromLevel() {
     const levelPercentage = 4;
@@ -34,31 +54,36 @@ export default function BlackholePage () {
 
     const currentLevel = levels[level];
     const nextLevel = levels[level + 1];
-  
-    if (!nextLevel) 
+
+    if (!nextLevel)
       setMyXp(currentLevel?.xp_total);
-    else{
+    else {
       const xpDifference = nextLevel.xp_total - currentLevel?.xp_total;
       const xpFromPercentage = (xpDifference * levelPercentage) / 100;
       setMyXp(currentLevel?.xp_total + xpFromPercentage);
     }
   }
 
-  const fetchProjects = async (update = false) => {
+  const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      if (!token) {
-        window.location.href = '/auth'; 
-        return;
-      }
-  
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/myproject`, {
+
+      // Fetch MyProjects
+      const myProjectsResponse = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/myproject`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("projects", response.data);
-  
-      setProjects(response.data);
-      setFilteredProjects(response.data);
+
+      // Fetch CoreProjects
+      const coreProjectsResponse = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/coreproject`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log("My Projects:", myProjectsResponse.data);
+      console.log("Core Projects:", coreProjectsResponse.data);
+
+      setProjects(myProjectsResponse.data);
+      setCoreProjects(coreProjectsResponse.data);
+      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch projects:', error);
       if (error.response && error.response.status === 401) {
@@ -68,26 +93,22 @@ export default function BlackholePage () {
   };
 
   useEffect(() => {
-    if(cursus_id != 0)
-      fetchProjects(false);
+    if (user) {
+      fetchUserData();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (cursus_id !== 0) {
+      fetchProjects();
+    }
   }, [cursus_id]);
 
   useEffect(() => {
-    if(user)
-      fetchUserData();
-  }, [user]);
-    
-  useEffect(()=>{
-    if(level != 0)
+    if (level !== 0) {
       calculateXpFromLevel();
+    }
   }, [level]);
-
-  useEffect(() => {
-    const filtered = projects.filter(project => 
-      project.name.toLowerCase().includes(filterText.toLowerCase())
-    );
-    setFilteredProjects(filtered);
-  }, [filterText, projects]);
 
   const fetchUserData = async () => {
     try {
@@ -101,8 +122,6 @@ export default function BlackholePage () {
         },
       });
       const userData = response.data;
-
-      console.log(user);
 
       setCursus_id(user.cursus_id ?? 0);
       setWeekly_days(userData.weekly_days ?? '');
@@ -127,37 +146,27 @@ export default function BlackholePage () {
     return `${yyyy}-${mm}-${dd}`;
   };
 
+  const mergedProjects = mergeProjects(coreProjects, projects);
+
   return (
     <div>
-      <TopBanner 
-        daily_hours={daily_hours}
-        weekly_days={weekly_days}
-        kickoff_date={kickoff_date}
-      />
-      <Header 
-        myCurrentBlackHole={myCurrentBlackHole}
-        level={level}
-        myXp={myXp}
-        name={name}
-      />
-      <section className={styles.filters}>
-        <input 
-          type="text" 
-          value={filterText} 
-          onChange={(e) => setFilterText(e.target.value)} 
-          placeholder="Filter projects by name" 
-        />
-        <div>
-          <p>Filtered Projects: {filteredProjects.length}</p>
-          {filteredProjects.map(project => (
-            <div key={project.id}>
-              <p>Name: {project.name}</p>
-              <p>ID: {project.id}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-      <ProjectCards projects={projects} myXp={myXp} myRank={myRank} />
+      {loading && <p>Loading...</p>}
+      {!loading && (
+        <>
+          <TopBanner
+            daily_hours={daily_hours}
+            weekly_days={weekly_days}
+            kickoff_date={kickoff_date}
+          />
+          <Header
+            myCurrentBlackHole={myCurrentBlackHole}
+            level={level}
+            myXp={myXp}
+            name={name}
+          />
+          <ProjectCards projects={mergedProjects} myXp={myXp} myRank={myRank} />
+        </>
+      )}
     </div>
   );
 };

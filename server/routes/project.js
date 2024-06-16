@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const MyProject = require('../models/myProject');
 const { requireAuth } = require('../middleware/authMiddleware'); // Import middleware
+const CoreProject = require('../models/coreProject');
 const User = require('../models/user');
 const Project = require('../models/project');
 
@@ -87,6 +88,17 @@ router.get('/', async (req, res) => {
             throw error;
         }
     };
+
+    router.get('/coreproject', async (req, res) => {
+      console.log("here")
+      try {
+        const coreProjects = await CoreProject.find();
+        res.status(200).json(coreProjects);
+      } catch (error) {
+        console.error('Failed to fetch core projects:', error);
+        res.status(500).json({ error: 'Failed to fetch core projects' });
+      }
+    });
 
 module.exports = router;
     

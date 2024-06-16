@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const MyProject = require('../models/myProject');
+const CoreProject = require('../models/coreProject');
 const { projects } = require('../db'); // Assuming projects is an array of project data
 const { generateSecurePassword } = require('./utils');
 
@@ -20,32 +21,35 @@ async function findOrCreateUser(userData) {
 
       console.log('New user created:', user);
 
-      // Seed initial projects
       const userProjects = [];
       const existingProjectIds = new Set(); // Track existing project ids
 
       for (const project of projects) {
         if (!existingProjectIds.has(project.id)) {
-          userProjects.push({
-            id: project.id,
-            name: project.name,
-            rank: project.rank,
-            xp: project.xp,
-            maxGrade: project.maxGrade,
-            user: user._id
-          });
-          existingProjectIds.add(project.id);
+          const existingProject = await MyProject.findOne({ id: project.id });
+
+          if (!existingProject) {
+            // Create a new MyProject document for each CoreProject
+            const newProject = new MyProject({
+              id: project.id,
+              email: userData.email, // User's email
+              grade: 0,
+              start_date: null,
+              end_date: null,
+            });
+            const savedProject = await newProject.save();
+            userProjects.push(savedProject);
+            existingProjectIds.add(project.id);
+          } else {
+            console.warn(`Skipping duplicate project with id ${project.id}`);
+          }
         } else {
           console.warn(`Skipping duplicate project with id ${project.id}`);
         }
       }
 
-      const createdProjects = await MyProject.insertMany(userProjects);
-
-      console.log('Created projects:', createdProjects);
-
       // Update user with the seeded projects
-      user.myProjects = createdProjects.map(project => project._id);
+      user.myProjects = userProjects.map(project => project._id);
       await user.save();
 
       console.log('Updated user with projects:', user);
