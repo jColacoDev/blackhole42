@@ -1,5 +1,5 @@
 "use client"
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export const UserContext = createContext();
@@ -14,6 +14,13 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem('authUserData')
     router.push(window.location.pathname);
   };
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem('authUserData'));
+    if (storedUser) {
+      setUser(storedUser);
+    }
+  }, []);
 
   return (
     <UserContext.Provider value={{ user, setUser, signOut }}>

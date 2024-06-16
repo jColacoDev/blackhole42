@@ -68,112 +68,147 @@ const levels = [
 
 const projects = [
     {
-        id: 0,
+        id: 1314,
         name: "Libft",
         rank: 0,
         xp: 462,
         maxGrade: 125
     },
     {
-        id: 1,
+        id: 1327,
         name: "get_next_line",
         rank: 1,
         xp: 882,
         maxGrade: 125
     },
     {
-        id: 2,
+        id: 1316,
         name: "ft_printf",
         rank: 1,
         xp: 882,
         maxGrade: 125
     },
     {
-        id: 3,
+        id: 1994,
         name: "Born2beroot",
         rank: 1,
         xp: 577,
         maxGrade: 125
     },
     {
-        id: 4,
+        id: 1471,
         name: "push_swap",
         rank: 2,
         xp: 1855,
         maxGrade: 125
     },
     {
-        id: 5,
-        name: "minitalk/pipex",
+        id: 2005,
+        name: "minitalk",
         rank: 2,
         xp: 1142,
         maxGrade: 125
     },
     {
-        id: 6,
-        name: "so_long/fract-ol/fdf",
+        id: 2004,
+        name: "pipex",
+        rank: 2,
+        xp: 1142,
+        maxGrade: 125
+    },
+    {
+        id: 2009,
+        name: "so_long",
         rank: 2,
         xp: 1000,
         maxGrade: 125
     },
     {
-        id: 7,
+        id: 1476,
+        name: "fract-ol",
+        rank: 2,
+        xp: 1000,
+        maxGrade: 125
+    },
+    {
+        id: 2008,
+        name: "fdf",
+        rank: 2,
+        xp: 1000,
+        maxGrade: 125
+    },
+    {
+        id: 1334,
         name: "Philosophers",
         rank: 3,
         xp: 3360,
         maxGrade: 125
     },
     {
-        id: 8,
+        id: 1331,
         name: "minishell",
         rank: 3,
         xp: 2814,
         maxGrade: 125
     },
     {
-        id: 9,
-        name: "Cub3D/miniRT",
+        id: 1326,
+        name: "Cub3D",
         rank: 4,
         xp: 5775,
         maxGrade: 125
     },
     {
-        id: 10,
+        id: 1315,
+        name: "miniRT",
+        rank: 4,
+        xp: 5775,
+        maxGrade: 125
+    },
+    {
+        id: 2007,
         name: "NetPractice",
         rank: 4,
         xp: 3160,
         maxGrade: 100
     },
     {
-        id: 11,
+        id: 2364,
         name: "Piscine CPP",
         rank: 4,
         xp: 9660,
         maxGrade: 100
     },
     {
-        id: 12,
+        id: 1335,
         name: "ft_containers",
         rank: 5,
         xp: 10042,
         maxGrade: 125
     },
     {
-        id: 13,
+        id: 1983,
         name: "Inception",
         rank: 5,
         xp: 10042,
         maxGrade: 125
     },
     {
-        id: 14,
-        name: "webserv/ft_irc",
+        id: 1332,
+        name: "webserv",
         rank: 5,
         xp: 21630,
         maxGrade: 125
     },
     {
-        id: 15,
+        id: 1336,
+        name: "ft_irc",
+        rank: 5,
+        xp: 21630,
+        maxGrade: 125
+    },
+    {
+        id: 1337,
         name: "ft_transcendence",
         rank: 6,
         xp: 24360,

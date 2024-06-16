@@ -14,6 +14,7 @@ router.post('/signup', async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: 'User already exists' });
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = new User({
@@ -22,10 +23,22 @@ router.post('/signup', async (req, res) => {
     });
     await newUser.save();
 
+    // Seed initial projects
+    const userProjects = projects.map(project => ({
+      ...project,
+      user: newUser._id
+    }));
+    const createdProjects = await MyProject.insertMany(userProjects);
+
+    // Update user with the seeded projects
+    newUser.myProjects = createdProjects.map(project => project._id);
+    await newUser.save();
+
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ userId: newUser._id, token });
   } 
   catch (err) {
+    console.error('Error signing up user:', err);
     res.status(500).json({ message: 'Something went wrong' });
   }
 });
@@ -64,7 +77,7 @@ router.get('/callback', async (req, res) => {
       headers: { Authorization: `Bearer ${access_token}` }
     });
     const userData = userResponse.data;
-
+    
     // Step 3: Extract specific fields from userData
     const {
       id,
@@ -88,6 +101,7 @@ router.get('/callback', async (req, res) => {
       image: image.link,
       pool_month,
       pool_year,
+      cursus_id: cursus_users[1].cursus_id,
       cursus_user_level: cursus_users[1].level,
       cursus_user_blackholed_at: cursus_users[1].blackholed_at,
       cursus_user_created_at: cursus_users[1].created_at,

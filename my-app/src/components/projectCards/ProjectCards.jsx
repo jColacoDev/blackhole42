@@ -38,7 +38,7 @@ export default function ProjectCards({ projects, myXp, myRank }) {
             {projectsByRank[rank].map(project => {
               const nextBlackHoleDays = calculateNextBlackHoleDays(project.xp);
               return (
-                <article key={project.name}>
+                <article key={project.id}>
                   <figure>
                     <span>{project.name}</span>
                   </figure>

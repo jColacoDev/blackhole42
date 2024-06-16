@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   daily_hours: { type: Number, default: 0 },
   weekly_days: { type: Number, default: 0 },
+  myProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MyProject' }] // Reference to MyProject
 });
 
 module.exports = mongoose.model('User', userSchema);
