@@ -1,91 +1,52 @@
-"use client"
-import React, { useState, useEffect } from 'react';
+"use client";
+import React, { useState, useEffect, useContext } from 'react';
 import styles from './page.module.scss';
 import axios from 'axios';
 import useAuth from "@/hooks/useAuth";
-import { useRouter } from 'next/navigation';
+import { UserContext } from './../../providers/UserContext';
 
 export default function ProfilePage() {
   useAuth();
-  const router = useRouter();
+  const { user, setUser } = useContext(UserContext);
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [kickoff_date, setKickoff_date] = useState('');
-  const [daily_hours, setDaily_hours] = useState(0);
-  const [weekly_days, setWeekly_days] = useState(0);
-  const [level, setLevel] = useState(0);
-  const [level_percentage, setLevel_percentage] = useState(0);
+  // Ensure initial values are always defined
+  const [email, setEmail] = useState(user?.email || '');
+  const [password, setPassword] = useState(user?.password || '');
+  const [daily_hours, setDaily_hours] = useState(user?.daily_hours || 0);
+  const [weekly_days, setWeekly_days] = useState(user?.weekly_days || 0);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('No token found');
-        }
-  
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const userData = response.data;
-  
-        setName(userData.name ?? '');
-        setEmail(userData.email ?? '');
-        setLevel(userData.level ?? 0);
-        setDaily_hours(userData.daily_hours ?? 0);
-        setWeekly_days(userData.weekly_days ?? 0);
-        setLevel_percentage(userData.level_percentage ?? 0);
-  
-        if (userData.kickoff_date) {
-          const formattedDate = new Date(userData.kickoff_date).toISOString().slice(0, 10);
-          setKickoff_date(formattedDate);
-        } else {
-          setKickoff_date('');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        setError('Failed to fetch user data');
-        if (error.response && error.response.status === 401) {
-          router.push('/auth');
-        }
-      }
-    };
-  
-    fetchUserData();
-  }, []);
-  
+    // Only update state if user is defined
+    if (user) {
+      setEmail(user.email || '');
+      setPassword(user.password || '');
+      setDaily_hours(user.daily_hours || 0);
+      setWeekly_days(user.weekly_days || 0);
+    }
+  }, [user]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const updatedUser = {
-        name,
         email,
         password,
-        kickoff_date: formatToYYYYMMDD(kickoff_date),
-        level,
-        level_percentage,
         daily_hours,
         weekly_days,
       };
 
-      const token = localStorage.getItem('token');
       const response = await axios.put(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, updatedUser, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${user?.server_token}`,
         },
       });
+
+      setUser({ ...user, ...updatedUser });
       console.log('User updated successfully:', response.data);
     } catch (error) {
       console.error('Error updating user:', error);
       setError('Failed to update user');
-      if (error.response && error.response.status === 401) {
-        router.push('/auth');
-      }
     }
   };
 
@@ -102,87 +63,38 @@ export default function ProfilePage() {
       <form className={styles.login_form} onSubmit={handleSubmit}>
         <div>
           <div className={styles.flex_row}>
-            <label className={styles.lf_label} htmlFor="name">
+            <label className={styles.lf_label}>
               Name
             </label>
-            <input
-              id="name"
-              className={styles.lf_input}
-              placeholder="Name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <span className={styles.lf_input}>
+              {user?.first_name}
+            </span>
           </div>
           <div className={styles.flex_row}>
-            <label className={styles.lf_label} htmlFor="email">
+            <label className={styles.lf_label}>
               E-mail
             </label>
-            <input
-              id="email"
-              className={styles.lf_input}
-              placeholder="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled
-            />
-          </div>
-          <div className={styles.flex_row}>
-            <label className={styles.lf_label} htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              className={styles.lf_input}
-              placeholder="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <span className={styles.lf_input}>
+              {user?.email}
+            </span>
           </div>
         </div>
         <div>
           <div className={styles.flex_row}>
-            <label className={styles.lf_label} htmlFor="kickoff_date">
+            <label className={styles.lf_label}>
               Kickoff
             </label>
-            <input
-              id="kickoff_date"
-              className={styles.lf_input}
-              placeholder="Kickoff Date"
-              type="date"
-              value={kickoff_date}
-              onChange={(e) => setKickoff_date(e.target.value)}
-            />
+            <span className={styles.lf_input}>
+              {formatToYYYYMMDD(user?.cursus_user_created_at)}
+            </span>
           </div>
           <div className={styles.flex_row}>
-            <label className={styles.lf_label} htmlFor="level">
+            <label className={styles.lf_label}>
               Level
             </label>
-            <input
-              id="level"
-              className={styles.lf_input}
-              placeholder="Level"
-              type="number"
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-            />
-          </div>
-          <div className={styles.flex_row}>
-            <label className={styles.lf_label} htmlFor="level_percentage">
-              Level %
-            </label>
-            <input
-              id="level_percentage"
-              className={styles.lf_input}
-              placeholder="Level Percentage"
-              type="number"
-              value={level_percentage}
-              onChange={(e) => setLevel_percentage(e.target.value)}
-            />
+            <span className={styles.lf_input}>
+              {user?.cursus_user_level}
+            </span>
           </div>
         </div>
         <div>
@@ -196,7 +108,7 @@ export default function ProfilePage() {
               placeholder="Daily hours"
               type="number"
               value={daily_hours}
-              onChange={(e) => setDaily_hours(e.target.value)}
+              onChange={(e) => setDaily_hours(Number(e.target.value))}
             />
           </div>
           <div className={styles.flex_row}>
@@ -209,7 +121,7 @@ export default function ProfilePage() {
               placeholder="Weekly days"
               type="number"
               value={weekly_days}
-              onChange={(e) => setWeekly_days(e.target.value)}
+              onChange={(e) => setWeekly_days(Number(e.target.value))}
             />
           </div>
         </div>

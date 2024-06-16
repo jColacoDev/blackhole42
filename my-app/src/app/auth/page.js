@@ -1,30 +1,10 @@
 "use client";
 import styles from "./page.module.scss";
-import { useState, useContext, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useContext } from 'react';
 import { UserContext } from './../../providers/UserContext';
 
 export default function AuthPage() {
-  const { user, signOut, signIn } = useContext(UserContext);
-  const [error, setError] = useState('');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  
-  useEffect(()=>{
-    console.log(user)
-  }, [user])
-
-  useEffect(() => {
-    const token = searchParams.get('token');
-    const userData = searchParams.get('user');
-    if (token && userData) {
-      const parsedUserData = JSON.parse(decodeURIComponent(userData));
-      
-      signIn(token, parsedUserData);
-      // router.push('/');
-    }
-  }, [searchParams]);
+  const { user, setUser, signOut } = useContext(UserContext);
 
   const handle42SignInSubmit = (e) => {
     e.preventDefault();
@@ -33,13 +13,36 @@ export default function AuthPage() {
     const redirectUri = `${process.env.NEXT_PUBLIC_NODE_SERVER}/api/auth/callback`;
     const scope = "public";
     const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
-    window.location.href = authUrl;
+    
+    const authWindow = window.open(authUrl, '_blank');
+    const interval = setInterval(() => {
+      if (authWindow.closed) {
+        clearInterval(interval);
+        console.log('Authentication window closed.');
+        const authToken = localStorage.getItem('authToken');
+        const authUserData = localStorage.getItem('authUserData');
+    
+        console.log(authToken)
+        console.log(authUserData)
+
+        if (authToken && authUserData) {
+          try {
+            const parsedUserData = JSON.parse(authUserData);
+            setUser({ ...user, ...parsedUserData, authToken });
+
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('authUserData');
+          } catch (error) {
+            console.error('Failed to parse stored user data:', error);
+          }
+        }
+      }
+    }, 1500);
   };
 
   const handleSignOut = (e) => {
     e.preventDefault();
     signOut();
-    // router.push('/');
   };
 
   return (
@@ -55,7 +58,7 @@ export default function AuthPage() {
           <button onClick={handle42SignInSubmit} className={styles.lf_submit}>Sign In</button>
         </form>
       )}
-      {error && <p className={styles.error}>{error}</p>}
-    </section>
-  );
-}
+      </section>
+    );
+  }
+  

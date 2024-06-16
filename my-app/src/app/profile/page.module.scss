@@ -51,14 +51,17 @@ $gray-light:  #f5f6f8;
     justify-content: flex-start;
     padding: .2em .5em;
     background: $gray-light;
-    cursor: pointer;
+    border-top-left-radius: 8px;
 }
 .lf_input {
     flex: 1;
     padding: 1em;
     border: 0;
-    color: $gray;
+    color: #c9c9c9;
     font-size: 1rem;
+    background-color: #ffffff1a;
+    border-bottom-right-radius: 8px;
+    font-weight: 700;
 
     &:focus {
         outline: none;
