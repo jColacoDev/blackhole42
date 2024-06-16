@@ -3,11 +3,11 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { UserContext } from '@/providers/UserContext';
 
-const useAuth = () => {
+const useUser = () => {
   const router = useRouter();
   const { user, setUser } = useContext(UserContext);
 
-  const checkAuth = async () => {
+  const checkUser = async () => {
     try {
       let authToken = user?.authToken;
 
@@ -23,27 +23,20 @@ const useAuth = () => {
           throw new Error('No token found');
         }
       }
-
       await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/token/verifyToken`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
       });
     } catch (error) {
-      console.error('Not authenticated:', error);
-      router.push('/auth');
     }
   };
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  useEffect(() => {
-    checkAuth();
+    checkUser();
   }, [router, setUser]);
 
-  return { checkAuth };
+  return { checkUser };
 };
 
-export default useAuth;
+export default useUser;

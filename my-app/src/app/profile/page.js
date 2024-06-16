@@ -28,6 +28,7 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const updatedUser = {
         email,
@@ -38,7 +39,7 @@ export default function ProfilePage() {
 
       const response = await axios.put(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, updatedUser, {
         headers: {
-          Authorization: `Bearer ${user?.server_token}`,
+          Authorization: `Bearer ${user?.authToken}`,
         },
       });
 

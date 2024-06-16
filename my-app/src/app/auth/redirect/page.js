@@ -21,14 +21,12 @@ export default function RedirectPage() {
         if (!response.data.token) {
           throw new Error('Server login failed');
         }
+        const { user : responseUser, token : responseToken } = response.data;
 
-        const { user, token } = response.data;
-
-        localStorage.setItem('server_user', JSON.stringify(user));
-        localStorage.setItem('server_token', token);
+        localStorage.setItem('server_user', JSON.stringify(responseUser));
         
         localStorage.setItem('authToken', token);
-        localStorage.setItem('authUserData', JSON.stringify(parsedUserData));
+        localStorage.setItem('authUserData', JSON.stringify({...responseUser,...parsedUserData}));
       } catch (error) {
         console.error('Failed to authenticate:', error);
       }

@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const { generateSecurePassword } = require('./utils');
 
 async function findOrCreateUser(userData) {
   let user = await User.findOne({ email: userData.email });

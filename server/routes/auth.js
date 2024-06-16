@@ -6,7 +6,6 @@ const router = express.Router();
 const axios = require('axios');
 const { findOrCreateUser } = require('../utils/user');
 const { generateToken } = require('../utils/utils');
-const { requireAuth } = require('../middleware/authMiddleware');
 
 router.post('/signup', async (req, res) => {
   const { email, password } = req.body;
@@ -100,8 +99,6 @@ router.get('/callback', async (req, res) => {
     // Step 5: Generate JWT token for the user
     const token = generateToken(user);
 
-      console.log(formattedUserData)
-      console.log(token)
     // Step 6: Send formattedUserData and token to frontend
     const redirectUrl = `${process.env.NEXT_PUBLIC_SERVER}/auth/redirect?token=${token}&user=${encodeURIComponent(JSON.stringify(formattedUserData))}`;
     res.redirect(redirectUrl);

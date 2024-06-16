@@ -3,11 +3,12 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
-const { requireAuth } = require('../middleware/authMiddleware');
+const { requireAuth } = require('../middleware/authMiddleware'); // Import middleware
+const bcrypt = require('bcryptjs');
 
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // Access user ID from req.user
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -21,8 +22,9 @@ router.get('/', requireAuth, async (req, res) => {
 
 router.put('/', requireAuth, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // Access user ID from req.user
     const user = await User.findById(userId);
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

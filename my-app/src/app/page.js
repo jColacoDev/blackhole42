@@ -4,19 +4,15 @@ import styles from "./page.module.scss";
 import { useContext, useEffect } from 'react';
 import { UserContext } from './../providers/UserContext';
 import { useRouter } from 'next/navigation';
+import useUser from "@/hooks/useUser";
 
 export default function HomePage() {
+  useUser();
   const { user } = useContext(UserContext);
   const router = useRouter();
 
-  useEffect(()=>{
-    console.log("user: ", user)
-  }, [user])
-
-  
   const handleLoginClick = (e) => {
     e.preventDefault();
-    
     router.push('/auth');
   };
 

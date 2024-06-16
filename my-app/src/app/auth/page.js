@@ -2,8 +2,11 @@
 import styles from "./page.module.scss";
 import { useContext } from 'react';
 import { UserContext } from './../../providers/UserContext';
+import useAuth from "@/hooks/useAuth";
 
 export default function AuthPage() {
+  useAuth();
+
   const { user, setUser, signOut } = useContext(UserContext);
 
   const handle42SignInSubmit = (e) => {
@@ -21,17 +24,12 @@ export default function AuthPage() {
         console.log('Authentication window closed.');
         const authToken = localStorage.getItem('authToken');
         const authUserData = localStorage.getItem('authUserData');
-    
-        console.log(authToken)
-        console.log(authUserData)
+        const parsedUserData = JSON.parse(authUserData);
 
+        console.log("parsedUserData:",parsedUserData)
         if (authToken && authUserData) {
           try {
-            const parsedUserData = JSON.parse(authUserData);
             setUser({ ...user, ...parsedUserData, authToken });
-
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('authUserData');
           } catch (error) {
             console.error('Failed to parse stored user data:', error);
           }

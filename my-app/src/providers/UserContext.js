@@ -10,6 +10,8 @@ export const UserProvider = ({ children }) => {
 
   const signOut = () => {
     setUser(null);
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('authUserData')
     router.push(window.location.pathname);
   };
 
