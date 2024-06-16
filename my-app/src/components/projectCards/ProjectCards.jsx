@@ -82,8 +82,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
                     },
                 }
             );
-    
-            console.log('Project updated:', response.data);
+            // console.log('Project updated:', response.data);
         } catch (error) {
             console.error('Error updating project:', error);
         }

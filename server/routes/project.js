@@ -105,17 +105,7 @@ router.get('/', async (req, res) => {
     router.put('/myproject/:projectId', async (req, res) => {
       const projectId = req.params.projectId;
       const { grade, start_date, end_date } = req.body;
-    
-      console.log("grade:", grade)
-      console.log("start_date:", start_date)
-      console.log("end_date:", end_date)
-      console.log("projectId:", projectId)
       try {
-        // if (!Types.ObjectId.isValid(projectId)) {
-        //   console.log("here:", projectId)
-        //   return res.status(400).json({ message: 'Invalid project ID format' });
-        // }
-    
         const updatedProject = await MyProject.findOneAndUpdate(
           { id: projectId },
           { grade, start_date, end_date },

@@ -72,19 +72,12 @@ export default function BlackholePage() {
     try {
       const token = localStorage.getItem('authToken');
 
-      // Fetch MyProjects
       const myProjectsResponse = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/myproject`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      // Fetch CoreProjects
       const coreProjectsResponse = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/coreproject`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      // console.log("My Projects:", myProjectsResponse.data);
-      // console.log("Core Projects:", coreProjectsResponse.data);
-
       setProjects(myProjectsResponse.data);
       setCoreProjects(coreProjectsResponse.data);
       setLoading(false);
