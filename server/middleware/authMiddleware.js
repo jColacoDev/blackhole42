@@ -24,8 +24,8 @@ const requireAuth = (req, res, next) => {
         console.error('User not found');
         return res.status(401).json({ message: 'Unauthorized' });
       }
-      req.user = user; // Attach user object to request
-      next(); // Proceed to the next middleware or route handler
+      req.user = user;
+      next();
     } catch (dbError) {
       console.error('Database error:', dbError);
       res.status(500).json({ message: 'Server error' });

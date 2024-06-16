@@ -7,6 +7,7 @@ const userRoutes = require('./routes/user');
 const tokenRoutes = require('./routes/token');
 const { requireAuth } = require('./middleware/authMiddleware');
 const cookieParser = require('cookie-parser');
+const Project = require('./models/project');
 
 const app = express();
 app.use(cookieParser());
@@ -33,6 +34,19 @@ const startMongoDb = async (cloud = false) => {
   }
 };
 startMongoDb(false);
+
+app.get('/api/projects', requireAuth, async (req, res) => {
+    try {
+        const projects = await Project.find({});
+        
+        console.log("projects")
+        console.log(projects)
+        res.json(projects);
+    } catch (error) {
+        console.log("projects2")
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
