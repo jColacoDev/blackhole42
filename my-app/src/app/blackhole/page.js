@@ -98,11 +98,11 @@ const BlackholePage = () => {
         },
       });
       const userData = response.data;
-      
+
       setCursus_id(user.cursus_id ?? 0);
       setWeekly_days(userData.weekly_days ?? '');
       setDaily_hours(userData.daily_hours ?? '');
-      setKickoff_date(formatToYYYYMMDD(userData.cursus_user_created_at) ?? '');
+      setKickoff_date(formatToYYYYMMDD(user.cursus_user_created_at) ?? '');
       setName(user.login ?? '');
       setLevel(user.cursus_user_level ?? 0);
 
@@ -148,18 +148,20 @@ const BlackholePage = () => {
       const mergedProjects = mergeProjects(coreProjects, projects);
 
       if (Array.isArray(mergedProjects) && mergedProjects.length > 0) {
-        const maxRank = mergedProjects.reduce((max, project) => Math.max(max, project.rank), 0);
-        const ranksDone = new Array(maxRank + 1).fill(true); // Start assuming all ranks are done
+        const ranksDone = new Array(mergedProjects.length).fill(false); // Start assuming all ranks are not done
 
-        mergedProjects.forEach(project => {
-          const { rank, start_date, end_date, score } = project;
-          if (!(start_date && end_date && score >= 100)) {
-            ranksDone[rank] = false; // Set rank as not done if any project is incomplete
+        mergedProjects.sort((a, b) => a.rank - b.rank);
+
+        for (const project of mergedProjects) {
+          const { rank, start_date, end_date, grade } = project;
+
+          if (!(start_date && end_date && grade >= 100)) {
+            setMyRank(rank)
+            return;
           }
-        });
-
-        const firstUndoneRank = ranksDone.findIndex(done => !done);
-        setMyRank(firstUndoneRank === -1 ? maxRank + 1 : firstUndoneRank); // Default to maxRank + 1 if all ranks are done
+        }
+        const maxRank = mergedProjects.reduce((max, project) => Math.max(max, project.rank), 0);
+        setMyRank(maxRank + 1);
       }
     }
   }, [loading, coreProjects, projects]);
@@ -179,9 +181,15 @@ const BlackholePage = () => {
             level={level}
             myXp={myXp}
             name={name}
-            myRank={myRank}
+            rank={myRank}
           />
-          <ProjectCards user={user} projects={mergeProjects(coreProjects, projects)} myXp={myXp} myRank={myRank} />
+          <ProjectCards 
+            user={user} 
+            projects={mergeProjects(coreProjects, projects)} 
+            myXp={myXp} 
+            myRank={myRank} 
+            setProjects={setProjects} // Pass the setProjects function
+          />
         </>
       )}
     </div>
