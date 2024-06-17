@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import TopBanner from '@/components/topBanner/TopBanner';
@@ -30,7 +30,7 @@ const mergeProjects = (coreProjects, myProjects) => {
   return Array.from(projectMap.values());
 };
 
-export default function BlackholePage() {
+const BlackholePage = () => {
   useAuth();
   const { user } = useContext(UserContext);
 
@@ -47,27 +47,24 @@ export default function BlackholePage() {
   const [myCurrentBlackHole, setMyCurrentBlackHole] = useState("19/10/2024");
   const [loading, setLoading] = useState(true);
 
-  function calculateXpFromLevel(level) {
-    const integerPart = Math.floor(level);
-    const fractionalPart = level - integerPart;
-    const levelPercentage = fractionalPart * 100;
-  
-    if (integerPart < 0 || integerPart >= levels.length)
-      throw new Error('Invalid level');
-  
-    const currentLevel = levels[integerPart];
-    const nextLevel = levels[integerPart + 1];
-  
-    if (!nextLevel) {
-      setMyXp(Math.round(currentLevel?.xp_total));
-    } else {
-      const xpDifference = nextLevel.xp_total - currentLevel?.xp_total;
-      const xpFromPercentage = (xpDifference * levelPercentage) / 100;
-      const totalXp = currentLevel?.xp_total + xpFromPercentage;
-      setMyXp(Math.round(totalXp));
+  useEffect(() => {
+    if (user) {
+      fetchUserData();
     }
-  }
-    
+  }, [user]);
+
+  useEffect(() => {
+    if (cursus_id !== 0) {
+      fetchProjects();
+    }
+  }, [cursus_id]);
+
+  useEffect(() => {
+    if (level) {
+      calculateXpFromLevel(level);
+    }
+  }, [level]);
+
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -89,24 +86,6 @@ export default function BlackholePage() {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      fetchUserData();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (cursus_id !== 0) {
-      fetchProjects();
-    }
-  }, [cursus_id]);
-
-  useEffect(() => {
-    if (level) {
-      calculateXpFromLevel(level);
-    }
-  }, [level]);
-
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -119,18 +98,18 @@ export default function BlackholePage() {
         },
       });
       const userData = response.data;
-
+      
       setCursus_id(user.cursus_id ?? 0);
       setWeekly_days(userData.weekly_days ?? '');
       setDaily_hours(userData.daily_hours ?? '');
-      setKickoff_date(formatToYYYYMMDD(user.cursus_user_created_at) ?? '');
+      setKickoff_date(formatToYYYYMMDD(userData.cursus_user_created_at) ?? '');
       setName(user.login ?? '');
       setLevel(user.cursus_user_level ?? 0);
 
     } catch (error) {
       console.error('Error fetching user data:', error);
       if (error.response && error.response.status === 401) {
-        router.push('/auth');
+        window.location.href = '/auth';
       }
     }
   };
@@ -143,7 +122,47 @@ export default function BlackholePage() {
     return `${yyyy}-${mm}-${dd}`;
   };
 
-  const mergedProjects = mergeProjects(coreProjects, projects);
+  const calculateXpFromLevel = (level) => {
+    const integerPart = Math.floor(level);
+    const fractionalPart = level - integerPart;
+    const levelPercentage = fractionalPart * 100;
+
+    if (integerPart < 0 || integerPart >= levels.length)
+      throw new Error('Invalid level');
+
+    const currentLevel = levels[integerPart];
+    const nextLevel = levels[integerPart + 1];
+
+    if (!nextLevel) {
+      setMyXp(Math.round(currentLevel?.xp_total));
+    } else {
+      const xpDifference = nextLevel.xp_total - currentLevel?.xp_total;
+      const xpFromPercentage = (xpDifference * levelPercentage) / 100;
+      const totalXp = currentLevel?.xp_total + xpFromPercentage;
+      setMyXp(Math.round(totalXp));
+    }
+  };
+
+  useEffect(() => {
+    if (!loading) {
+      const mergedProjects = mergeProjects(coreProjects, projects);
+
+      if (Array.isArray(mergedProjects) && mergedProjects.length > 0) {
+        const maxRank = mergedProjects.reduce((max, project) => Math.max(max, project.rank), 0);
+        const ranksDone = new Array(maxRank + 1).fill(true); // Start assuming all ranks are done
+
+        mergedProjects.forEach(project => {
+          const { rank, start_date, end_date, score } = project;
+          if (!(start_date && end_date && score >= 100)) {
+            ranksDone[rank] = false; // Set rank as not done if any project is incomplete
+          }
+        });
+
+        const firstUndoneRank = ranksDone.findIndex(done => !done);
+        setMyRank(firstUndoneRank === -1 ? maxRank + 1 : firstUndoneRank); // Default to maxRank + 1 if all ranks are done
+      }
+    }
+  }, [loading, coreProjects, projects]);
 
   return (
     <div>
@@ -160,10 +179,13 @@ export default function BlackholePage() {
             level={level}
             myXp={myXp}
             name={name}
+            myRank={myRank}
           />
-          <ProjectCards user={user} projects={mergedProjects} myXp={myXp} myRank={myRank} />
+          <ProjectCards user={user} projects={mergeProjects(coreProjects, projects)} myXp={myXp} myRank={myRank} />
         </>
       )}
     </div>
   );
 };
+
+export default BlackholePage;
