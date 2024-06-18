@@ -2,10 +2,12 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
+import BlackholeAnimation from '@/components/BlackholeAnimation/BlackholeAnimation';
 
 export default function RedirectPage() {
   const searchParams = useSearchParams();
-
+  const message = "We are logging In"
+  const timer_delay = 1500;
   const handleAuthentication = async () => {
     const token = searchParams.get('token');
     const userData = searchParams.get('user');
@@ -34,16 +36,19 @@ export default function RedirectPage() {
   };
 
   useEffect(() => {
-    handleAuthentication();
     const timer = setTimeout(() => {
       window.close();
-    }, 2000);
+    }, timer_delay);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    handleAuthentication();
   }, [searchParams]);
 
   return (
-    <section>
-      <h2>Redirecting...</h2>
+    <section className="redirectPage">
+      <BlackholeAnimation message={message} />
     </section>
   );
 }

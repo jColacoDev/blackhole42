@@ -6,6 +6,7 @@ const coreProjectSchema = new mongoose.Schema({
   rank: { type: Number, required: true },
   xp: { type: Number, required: true },
   maxGrade: { type: Number, required: true },
+  group: { type: Number},
 });
 
 module.exports = mongoose.model('CoreProject', coreProjectSchema);

@@ -1,33 +1,35 @@
 .sticky {
     display: flex;
+    align-items: center;
     flex-direction: column;
     position: sticky;
+    width: 100%;
     top: 0;
 }
 
 .logo {
-    margin: 1em 0;
+    margin: 2em 0;
 }
 
 .nav_scss {
     background-color: var(--light-dark);
     color: var(--light-white);
     width: var(--nav-width);
+    min-width: var(--nav-width);
     display: flex;
     align-items: flex-start;
     justify-content: center;
     
     img{
-        filter: invert(1);
         max-width: 100%;
         max-height: 100%;
+        opacity: .3;
 
-        &:hover{
-            filter: invert(1) sepia(100%) saturate(500%) hue-rotate(700deg);
-        }
+        transition: .2s;
 
         &.highlight {
-            filter: invert(1) sepia(100%) saturate(600%) hue-rotate(150deg) !important;
+            opacity: 1;
+            transform: scale(1.4);
         }
     }
     
@@ -37,15 +39,29 @@
         justify-content: center;
         align-items: center;
     }
+    
+    a {
+        width: 100%;
+        text-align: center;
+
+        &:hover{
+            img {
+                opacity: 1;
+            }
+        }
+    }
 
     ul {
         display: flex;
+        align-items: center;
         flex-direction: column;
-        gap: .5em;
+        gap: 2em;
+        width: 100%;
 
         li {
             display: flex;
             justify-content: center;
+            width: 100%;
         }
     }
 }

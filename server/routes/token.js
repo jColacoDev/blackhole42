@@ -19,7 +19,7 @@ router.get('/verifyToken', (req, res) => {
   // Verify the token
   jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
     if (err) {
-      console.log("Token verification failed:", err);
+      console.log("Token verification failed");
       return res.status(401).json({ message: 'Unauthorized' });
     }
 

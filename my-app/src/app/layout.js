@@ -4,8 +4,8 @@ import Nav from "@/components/nav/Nav";
 import { UserProvider } from "@/providers/UserContext";
 
 export const metadata = {
-  title: "BH 42",
-  description: "BlackHole 42",
+  title: "42hub",
+  description: "A webapp developed for 42 stuff",
 };
 
 export default function RootLayout({ children }) {

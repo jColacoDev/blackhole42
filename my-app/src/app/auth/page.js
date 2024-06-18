@@ -26,7 +26,6 @@ export default function AuthPage() {
         const authUserData = localStorage.getItem('authUserData');
         const parsedUserData = JSON.parse(authUserData);
 
-        console.log("parsedUserData:",parsedUserData)
         if (authToken && authUserData) {
           try {
             setUser({ ...user, ...parsedUserData, authToken });

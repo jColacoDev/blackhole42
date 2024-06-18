@@ -80,9 +80,6 @@ const BlackholePage = () => {
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch projects:', error);
-      if (error.response && error.response.status === 401) {
-        window.location.href = '/auth';
-      }
     }
   };
 
@@ -109,7 +106,6 @@ const BlackholePage = () => {
     } catch (error) {
       console.error('Error fetching user data:', error);
       if (error.response && error.response.status === 401) {
-        window.location.href = '/auth';
       }
     }
   };

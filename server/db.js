@@ -107,35 +107,40 @@ const projects = [
         name: "minitalk",
         rank: 2,
         xp: 1142,
-        maxGrade: 125
+        maxGrade: 125,
+        group: 1,
     },
     {
         id: 2004,
         name: "pipex",
         rank: 2,
         xp: 1142,
-        maxGrade: 125
+        maxGrade: 125,
+        group: 1,
     },
     {
         id: 2009,
         name: "so_long",
         rank: 2,
         xp: 1000,
-        maxGrade: 125
+        maxGrade: 125,
+        group: 2,
     },
     {
         id: 1476,
         name: "fract-ol",
         rank: 2,
         xp: 1000,
-        maxGrade: 125
+        maxGrade: 125,
+        group: 2,
     },
     {
         id: 2008,
         name: "fdf",
         rank: 2,
         xp: 1000,
-        maxGrade: 125
+        maxGrade: 125,
+        group: 2,
     },
     {
         id: 1334,
@@ -156,14 +161,16 @@ const projects = [
         name: "Cub3D",
         rank: 4,
         xp: 5775,
-        maxGrade: 125
+        maxGrade: 125,
+        group: 1,
     },
     {
         id: 1315,
         name: "miniRT",
         rank: 4,
         xp: 5775,
-        maxGrade: 125
+        maxGrade: 125,
+        group: 1,
     },
     {
         id: 2007,

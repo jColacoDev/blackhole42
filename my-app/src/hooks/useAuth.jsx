@@ -7,7 +7,17 @@ const useAuth = () => {
   const router = useRouter();
   const { user, setUser } = useContext(UserContext);
 
+  const removeUser = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUserData');
+    setUser(null);
+    if (router.pathname !== '/auth')
+      router.push('/auth');
+  };
+
   const checkAuth = async () => {
+    let flag = "";
+
     try {
       let authToken = user?.authToken;
 
@@ -17,31 +27,32 @@ const useAuth = () => {
         if (storedAuthToken) {
           authToken = storedAuthToken;
           const parsedUserData = JSON.parse(authUserData);
-
-          setUser({ ...user,...parsedUserData, authToken });
+          setUser({ ...user, ...parsedUserData, authToken });
         } else {
-          throw new Error('No token found');
+          flag = "No token found";
         }
       }
-
-      await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/token/verifyToken`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
+      if(authToken){
+        await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/token/verifyToken`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+      }
     } catch (error) {
-      console.error('Not authenticated:', error);
-      router.push('/auth');
+      flag = `${flag} - Not authenticated`;
+    }
+    if (flag) {
+      console.error(flag);
+      removeUser();
     }
   };
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  useEffect(() => {
-    checkAuth();
-  }, [router, setUser]);
+    if (!user?.authToken) {
+      checkAuth();
+    }
+  }, [user]);
 
   return { checkAuth };
 };

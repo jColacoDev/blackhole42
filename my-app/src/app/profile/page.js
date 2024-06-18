@@ -9,7 +9,6 @@ export default function ProfilePage() {
   useAuth();
   const { user, setUser } = useContext(UserContext);
 
-  // Ensure initial values are always defined
   const [email, setEmail] = useState(user?.email || '');
   const [password, setPassword] = useState(user?.password || '');
   const [daily_hours, setDaily_hours] = useState(user?.daily_hours || 0);
@@ -17,7 +16,6 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Only update state if user is defined
     if (user) {
       setEmail(user.email || '');
       setPassword(user.password || '');
@@ -36,13 +34,11 @@ export default function ProfilePage() {
         daily_hours,
         weekly_days,
       };
-
       const response = await axios.put(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, updatedUser, {
         headers: {
           Authorization: `Bearer ${user?.authToken}`,
         },
       });
-
       setUser({ ...user, ...updatedUser });
       console.log('User updated successfully:', response.data);
     } catch (error) {

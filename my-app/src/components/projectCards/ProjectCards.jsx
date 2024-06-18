@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect } from 'react';
 import { cards_scss, rank_section, projects_section } from './styles.module.scss';
 import axios from 'axios';
@@ -6,7 +5,19 @@ import axios from 'axios';
 export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0, setProjects }) {
   const [openRanks, setOpenRanks] = useState({});
   const [projectInputs, setProjectInputs] = useState({});
-  const [initialized, setInitialized] = useState(false); // Track initialization
+  const [selectedProjects, setSelectedProjects] = useState({});
+
+  useEffect(() => {
+    const initialInputs = {};
+    projects.forEach(project => {
+      initialInputs[project?.id] = {
+        grade: project?.grade || '',
+        start_date: project?.start_date ? new Date(project?.start_date).toISOString().substr(0, 10) : '',
+        end_date: project?.end_date ? new Date(project?.end_date).toISOString().substr(0, 10) : ''
+      };
+    });
+    setProjectInputs(initialInputs);
+  }, [projects]);
 
   useEffect(() => {
     if (myRank !== undefined) {
@@ -14,25 +25,36 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
     }
   }, [myRank]);
 
-  useEffect(() => {
-    const initialInputs = {};
+  const processProjects = () => {
+    const projectsByRank = {};
     projects.forEach(project => {
-      initialInputs[project.id] = {
-        grade: project.grade || '',
-        start_date: project.start_date ? new Date(project.start_date).toISOString().substr(0, 10) : '',
-        end_date: project.end_date ? new Date(project.end_date).toISOString().substr(0, 10) : ''
-      };
+      const { id, rank, group } = project;
+      if (!projectsByRank[rank]) {
+        projectsByRank[rank] = {
+          rank,
+          groups: {}
+        };
+      }
+      if (!group || group === 0) {
+        if (!projectsByRank[rank].groups[0]) {
+          projectsByRank[rank].groups[0] = {
+            group: 0,
+            projects: []
+          };
+        }
+        projectsByRank[rank].groups[0].projects.push(id);
+      } else {
+        if (!projectsByRank[rank].groups[group]) {
+          projectsByRank[rank].groups[group] = {
+            group,
+            projects: []
+          };
+        }
+        projectsByRank[rank].groups[group].projects.push(id);
+      }
     });
-    setProjectInputs(initialInputs);
-    setInitialized(true);
-  }, [projects]);
-
-  const projectsByRank = projects.reduce((acc, project) => {
-    const { rank } = project;
-    if (!acc[rank]) acc[rank] = [];
-    acc[rank].push(project);
-    return acc;
-  }, {});
+    return projectsByRank;
+  };
 
   const toggleRank = (rank) => {
     setOpenRanks(prevState => ({
@@ -42,35 +64,23 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
   };
 
   const calculateNextBlackHoleDays = (project) => {
-    const { grade, start_date, end_date, xp } = project;
 
-    // Check if grade, start_date, and end_date are defined
-    if (grade !== undefined && start_date && end_date) {
-      const nextBlackHoleDays = (Math.pow((myXp + xp) / 49980, 0.45) - Math.pow(myXp / 49980, 0.45)) * 483;
+    if (project?.grade && project?.start_date && project?.end_date) {
+      const nextBlackHoleDays = (Math.pow((myXp + project?.xp) / 49980, 0.45) - Math.pow(myXp / 49980, 0.45)) * 483;
       return nextBlackHoleDays.toFixed(2);
     }
 
-    return 0; // Default to 0 if conditions are not met
+    return 0;
   };
 
   const handleInputChange = (projectId, field, value) => {
-    setProjectInputs(prevState => {
-      const updatedProject = {
+    setProjectInputs(prevState => ({
+      ...prevState,
+      [projectId]: {
         ...prevState[projectId],
         [field]: value
-      };
-
-      if (field === 'start_date' && value) {
-        if (updatedProject.end_date && new Date(value) > new Date(updatedProject.end_date)) {
-          updatedProject.end_date = '';
-        }
       }
-
-      return {
-        ...prevState,
-        [projectId]: updatedProject
-      };
-    });
+    }));
   };
 
   const handleSave = async (projectId) => {
@@ -91,72 +101,148 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
         }
       );
 
-      // Update the parent component's state with the new project data
-      setProjects(prevProjects => {
-        return prevProjects.map(project => 
-          project.id === projectId 
-          ? { ...project, grade, start_date, end_date } 
-          : project
-        );
-      });
+      setProjects(prevProjects =>
+        prevProjects.map(project =>
+          project?.id === projectId ? { ...project, grade, start_date, end_date } : project
+        )
+      );
 
     } catch (error) {
       console.error('Error updating project:', error);
     }
   };
 
+  const handleSelectProject = (group, projectId) => {
+    setSelectedProjects(prevState => ({
+      ...prevState,
+      [group]: projectId,
+    }));
+  };
+
+  const projectsByRank = processProjects();
+
   return (
     <section className={cards_scss}>
-      {projectsByRank && Object.keys(projectsByRank).map(rank => (
-        <div className={rank_section} key={rank}>
-          <h2 onClick={() => toggleRank(rank)}>Rank {rank}</h2>
-          <div className={projects_section} style={{ display: openRanks[rank] ? 'flex' : 'none' }}>
-            {projectsByRank[rank].map(project => {
-              const nextBlackHoleDays = calculateNextBlackHoleDays(project);
-              const { grade = '', start_date = '', end_date = '' } = projectInputs[project.id] || {};
-              return (
-                <article key={project.id}>
-                  <figure>
-                    <span>{project.name}</span>
-                  </figure>
-                  <ul>
-                    <li><span>Project XP: </span> <span>{project.xp}</span></li>
-                    <li><span>Gained XP: </span> <span>{((project.xp * grade) / 100).toFixed(0)}</span></li>
-                    <li><span>Gained BH days: </span> <span>{nextBlackHoleDays}</span></li>
-                  </ul>
-                  <ul>
-                    <li>
-                      <span>Grade</span>
-                      <input
-                        type="number"
-                        value={grade}
-                        min="0"
-                        max={project.maxGrade}
-                        onChange={(e) => handleInputChange(project.id, 'grade', Math.min(Math.max(e.target.value, 0), project.maxGrade))}
-                      />
-                    </li>
-                    <li>
-                      <span>Start Date</span>
-                      <input
-                        type="date"
-                        value={start_date}
-                        onChange={(e) => handleInputChange(project.id, 'start_date', e.target.value)}
-                      />
-                    </li>
-                    <li>
-                      <span>End Date</span>
-                      <input
-                        type="date"
-                        value={end_date}
-                        disabled={!start_date}
-                        min={start_date}
-                        onChange={(e) => handleInputChange(project.id, 'end_date', e.target.value)}
-                      />
-                    </li>
-                  </ul>
-                  <button onClick={() => handleSave(project.id)}>Project Done</button>
-                </article>
-              );
+      {Object.values(projectsByRank).map(rankInfo => (
+        <div className={rank_section} key={rankInfo.rank}>
+          <h2 onClick={() => toggleRank(rankInfo.rank)}>Rank {rankInfo.rank}</h2>
+          <div className={projects_section} style={{ display: openRanks[rankInfo.rank] ? 'flex' : 'none' }}>
+            {Object.values(rankInfo.groups).map(groupInfo => {
+              const { group, projects: projectsIds } = groupInfo;
+              if (group === 0) {
+                // Render individual projects for group 0
+                console.log(rankInfo)
+                console.log(groupInfo)
+                return projectsIds.map(projectId => {
+                  const project = projects.find(p => p.id === projectId && p.rank === rankInfo.rank);
+                  console.log(project)
+                  const nextBlackHoleDays = calculateNextBlackHoleDays(project);
+                  const { grade = '', start_date = '', end_date = '' } = projectInputs[projectId] || {};
+
+                  return (
+                    <article key={projectId}>
+                      <figure>
+                        <span>{project?.name}</span>
+                      </figure>
+                      <ul>
+                        <li><span>Project XP: </span><span>{project?.xp}</span></li>
+                        <li><span>Gained XP: </span><span>{((project?.xp * grade) / 100).toFixed(0)}</span></li>
+                        <li><span>Gained BH days: </span><span>{nextBlackHoleDays}</span></li>
+                      </ul>
+                      <ul>
+                        <li>
+                          <span>Grade</span>
+                          <input
+                            type="number"
+                            value={grade}
+                            min="0"
+                            max={project?.maxGrade}
+                            onChange={(e) => handleInputChange(projectId, 'grade', e.target.value)}
+                          />
+                        </li>
+                        <li>
+                          <span>Start Date</span>
+                          <input
+                            type="date"
+                            value={start_date}
+                            onChange={(e) => handleInputChange(projectId, 'start_date', e.target.value)}
+                          />
+                        </li>
+                        <li>
+                          <span>End Date</span>
+                          <input
+                            type="date"
+                            value={end_date}
+                            disabled={!start_date}
+                            min={start_date}
+                            onChange={(e) => handleInputChange(projectId, 'end_date', e.target.value)}
+                          />
+                        </li>
+                      </ul>
+                      <button onClick={() => handleSave(projectId)}>Project Done</button>
+                    </article>
+                  );
+                });
+              } else {
+                // Render grouped projects (one card per group)
+                const selectedProjectId = selectedProjects[group] || projects[0].id;
+                const selectedProject = projects.find(p => p.id === selectedProjectId);
+                const nextBlackHoleDays = calculateNextBlackHoleDays(selectedProject);
+                const { grade = '', start_date = '', end_date = '' } = projectInputs[selectedProjectId] || {};
+
+                return (
+                  <article key={group}>
+                    <figure>
+                      {projects.map(proj => (
+                        proj.rank === rankInfo.rank &&
+                        <span
+                          key={proj.id}
+                          onClick={() => handleSelectProject(group, proj.id)}
+                          style={{ cursor: 'pointer', fontWeight: selectedProjectId === proj.id ? 'bold' : 'normal' }}
+                        >
+                          {proj.name}
+                        </span>
+                      ))}
+                    </figure>
+                    <ul>
+                      <li><span>Project XP: </span><span>{selectedProject?.xp}</span></li>
+                      <li><span>Gained XP: </span><span>{((selectedProject?.xp * grade) / 100).toFixed(0)}</span></li>
+                      <li><span>Gained BH days: </span><span>{nextBlackHoleDays}</span></li>
+                    </ul>
+                    <ul>
+                      <li>
+                        <span>Grade</span>
+                        <input
+                          type="number"
+                          value={grade}
+                          min="0"
+                          max={selectedProject?.maxGrade}
+                          onChange={(e) => handleInputChange(selectedProjectId, 'grade', e.target.value)}
+                        />
+                      </li>
+                      <li>
+                        <span>Start Date</span>
+                        <input
+                          type="date"
+                          value={start_date}
+                          onChange={(e) => handleInputChange(selectedProjectId, 'start_date', e.target.value)}
+                        />
+                      </li>
+                      <li>
+                        <span>End Date</span>
+                        <input
+                          type="date"
+                          value={end_date}
+                          disabled={!start_date}
+                          min={start_date}
+                          onChange={(e) => handleInputChange(selectedProjectId, 'end_date', e.target.value)}
+                        />
+                      </li>
+                    </ul>
+                    <button onClick={() => handleSave(selectedProjectId)}>Project Done</button>
+                  </article>
+                );
+              }
             })}
           </div>
         </div>
