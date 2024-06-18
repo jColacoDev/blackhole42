@@ -2,6 +2,7 @@ import { useContext, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { UserContext } from '@/providers/UserContext';
+import useAuth from "@/hooks/useAuth";
 
 const useUser = () => {
   const router = useRouter();
@@ -29,6 +30,9 @@ const useUser = () => {
         },
       });
     } catch (error) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUserData');
+      setUser(null);
     }
   };
 

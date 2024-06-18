@@ -67,13 +67,13 @@ const BlackholePage = () => {
 
   const fetchProjects = async () => {
     try {
-      const token = localStorage.getItem('authToken');
+      // const token = localStorage.getItem('authToken');
 
       const myProjectsResponse = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/myproject`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${user?.authToken}` }
       });
       const coreProjectsResponse = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/coreproject`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${user?.authToken}` }
       });
       setProjects(myProjectsResponse.data);
       setCoreProjects(coreProjectsResponse.data);
@@ -85,13 +85,16 @@ const BlackholePage = () => {
 
   const fetchUserData = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No token found');
-      }
+      // const token = localStorage.getItem('authToken');
+      // console.log(token)
+      // if (!token) {
+      //   throw new Error('No token found');
+      // }
+      console.log(user)
+
       const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${user?.authToken}`,
         },
       });
       const userData = response.data;

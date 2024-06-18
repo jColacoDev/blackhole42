@@ -1,12 +1,21 @@
 "use client"
 import styles from "./styles.module.scss";
-import React from 'react'
+import React, {useContext} from 'react'
 import Image from 'next/image';
 import Link from 'next/link'
+import { UserContext } from './../../providers/UserContext';
 import { usePathname } from 'next/navigation';
 
 export default function nav() {
   const pathname = usePathname();
+  const { user, signOut } = useContext(UserContext);
+
+  const handleSignInOut = (e) => {
+    if(user)
+      signOut();
+    else
+      signIn();
+  };
 
   return (
     <nav className={styles.nav_scss}>
@@ -20,6 +29,7 @@ export default function nav() {
           />
         </Link>
         <ul>
+        {user && <>
           <li><Link href="/profile">
           <Image className={`${pathname === '/profile' ? styles.highlight : ''}`}
                 src="/images/logo/profile.png"
@@ -72,6 +82,15 @@ export default function nav() {
             <Image className={`${pathname === '/cart' ? styles.highlight : ''}`}
                 src="/images/logo/cart.png"
                 alt="42 cart"
+                width={35}
+                height={30}
+              />
+            </Link></li>
+        </>}
+            <li><Link href="/auth" onClick={handleSignInOut}>
+            <Image
+                src= {`/images/logo/${user ? "signout" : "signin"}.png`}
+                alt={`42 ${user ? "signout" : "signin"}`}
                 width={35}
                 height={30}
               />

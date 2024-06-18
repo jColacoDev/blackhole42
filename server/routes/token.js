@@ -7,7 +7,7 @@ router.get('/verifyToken', (req, res) => {
   // Extract the token from the Authorization header
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
 
-  // console.log("Token received:", token);
+  console.log("Token received:", token);
   // console.log("JWT Secret:", process.env.JWT_SECRET);
   // Check if the token is present
   if (!token) {

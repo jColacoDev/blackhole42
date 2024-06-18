@@ -1,5 +1,3 @@
-// middleware/authMiddleware.js
-
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
@@ -11,17 +9,15 @@ const requireAuth = (req, res, next) => {
     console.error('No token found');
     return res.status(401).json({ message: 'Unauthorized' });
   }
-
   jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
     if (err) {
-      console.error('Token verification error:', err);
+      console.error('Token verification error');
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
     try {
-      const user = await User.findById(decodedToken.id); // Ensure to use 'id' from decoded token
+      const user = await User.findById(decodedToken.userId);
       if (!user) {
-        console.error('User not found');
+        console.error('User not found middleware');
         return res.status(401).json({ message: 'Unauthorized' });
       }
       req.user = user;

@@ -70,9 +70,8 @@ router.get('/', async (req, res) => {
   
     try {
       const user = await User.findById(user_id).populate('myProjects');
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
+      if (!user)
+        return res.status(404).json({ message: 'User not found /myproject' });
       res.json(user.myProjects);
     } catch (error) {
       console.error('Error fetching user projects from the database:', error);

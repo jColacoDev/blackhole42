@@ -3,39 +3,12 @@ import styles from "./page.module.scss";
 import { useContext } from 'react';
 import { UserContext } from './../../providers/UserContext';
 import useAuth from "@/hooks/useAuth";
+import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
   useAuth();
 
-  const { user, setUser, signOut } = useContext(UserContext);
-
-  const handle42SignInSubmit = (e) => {
-    e.preventDefault();
-
-    const clientId = process.env.NEXT_PUBLIC_42_CLIENT_ID;
-    const redirectUri = `${process.env.NEXT_PUBLIC_NODE_SERVER}/api/auth/callback`;
-    const scope = "public";
-    const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
-    
-    const authWindow = window.open(authUrl, '_blank');
-    const interval = setInterval(() => {
-      if (authWindow.closed) {
-        clearInterval(interval);
-        console.log('Authentication window closed.');
-        const authToken = localStorage.getItem('authToken');
-        const authUserData = localStorage.getItem('authUserData');
-        const parsedUserData = JSON.parse(authUserData);
-
-        if (authToken && authUserData) {
-          try {
-            setUser({ ...user, ...parsedUserData, authToken });
-          } catch (error) {
-            console.error('Failed to parse stored user data:', error);
-          }
-        }
-      }
-    }, 1500);
-  };
+  const { user, signOut, signIn42 } = useContext(UserContext);
 
   const handleSignOut = (e) => {
     e.preventDefault();
@@ -52,10 +25,9 @@ export default function AuthPage() {
       ) : (
         <form className={styles.login_form}>
           <h2>Sign in with 42</h2>
-          <button onClick={handle42SignInSubmit} className={styles.lf_submit}>Sign In</button>
+          <button onClick={signIn42} className={styles.lf_submit}>Sign In</button>
         </form>
       )}
-      </section>
-    );
-  }
-  
+    </section>
+  );
+}

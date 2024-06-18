@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
@@ -6,12 +6,10 @@ import BlackholeAnimation from '@/components/BlackholeAnimation/BlackholeAnimati
 
 export default function RedirectPage() {
   const searchParams = useSearchParams();
-  const message = "We are logging In"
-  const timer_delay = 1500;
+  const message = "We are logging In";
   const handleAuthentication = async () => {
     const token = searchParams.get('token');
     const userData = searchParams.get('user');
-
     if (token && userData) {
       try {
         const parsedUserData = JSON.parse(decodeURIComponent(userData));
@@ -23,24 +21,23 @@ export default function RedirectPage() {
         if (!response.data.token) {
           throw new Error('Server login failed');
         }
-        const { user : responseUser, token : responseToken } = response.data;
+
+        const { user: responseUser, token: responseToken } = response.data;
 
         localStorage.setItem('server_user', JSON.stringify(responseUser));
-        
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('authUserData', JSON.stringify({...responseUser,...parsedUserData}));
+        localStorage.setItem('authToken', responseToken);
+        localStorage.setItem('authUserData', JSON.stringify({ ...responseUser, ...parsedUserData }));
+        window.opener.postMessage(
+          { authToken: responseToken, authUserData: JSON.stringify({ ...responseUser, ...parsedUserData }) },
+          window.location.origin
+        );
+
+        window.close();
       } catch (error) {
         console.error('Failed to authenticate:', error);
       }
     }
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      window.close();
-    }, timer_delay);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     handleAuthentication();

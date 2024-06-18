@@ -1,5 +1,3 @@
-// routes/user.js
-
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
@@ -10,9 +8,8 @@ router.get('/', requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user)
+      return res.status(404).json({ message: 'User not found get /user' });
     res.json(user);
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -24,12 +21,9 @@ router.put('/', requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
+    if (!user)
+      return res.status(404).json({ message: 'User not found put /user)' });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Update user fields based on request body
     if (req.body.email) user.email = req.body.email;
     if (req.body.password) user.password = await bcrypt.hash(req.body.password, 10);
     if (req.body.daily_hours) user.daily_hours = req.body.daily_hours;

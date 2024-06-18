@@ -121,6 +121,11 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
 
   const projectsByRank = processProjects();
 
+  const projectsExistsInGroup = (groupProjects) => {
+    const selectedProjects = projects.filter(project => groupProjects?.includes(project.id));
+    return selectedProjects || [];
+  };
+
   return (
     <section className={cards_scss}>
       {Object.values(projectsByRank).map(rankInfo => (
@@ -130,12 +135,8 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
             {Object.values(rankInfo.groups).map(groupInfo => {
               const { group, projects: projectsIds } = groupInfo;
               if (group === 0) {
-                // Render individual projects for group 0
-                console.log(rankInfo)
-                console.log(groupInfo)
                 return projectsIds.map(projectId => {
                   const project = projects.find(p => p.id === projectId && p.rank === rankInfo.rank);
-                  console.log(project)
                   const nextBlackHoleDays = calculateNextBlackHoleDays(project);
                   const { grade = '', start_date = '', end_date = '' } = projectInputs[projectId] || {};
 
@@ -184,17 +185,16 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
                   );
                 });
               } else {
-                // Render grouped projects (one card per group)
-                const selectedProjectId = selectedProjects[group] || projects[0].id;
-                const selectedProject = projects.find(p => p.id === selectedProjectId);
+                const groupProjects = projectsExistsInGroup(groupInfo.projects);
+                const selectedProjectId = selectedProjects[group] || (groupProjects.length > 0 ? groupProjects[0].id : null);
+                const selectedProject = groupProjects.find(p => p.id === selectedProjectId);
                 const nextBlackHoleDays = calculateNextBlackHoleDays(selectedProject);
                 const { grade = '', start_date = '', end_date = '' } = projectInputs[selectedProjectId] || {};
 
                 return (
                   <article key={group}>
                     <figure>
-                      {projects.map(proj => (
-                        proj.rank === rankInfo.rank &&
+                      {groupProjects.map(proj => (
                         <span
                           key={proj.id}
                           onClick={() => handleSelectProject(group, proj.id)}
