@@ -39,6 +39,7 @@ export const UserProvider = ({ children }) => {
     window.addEventListener('message', handleMessage);
   };
   
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('authUserData'));
     if (storedUser) {
@@ -56,7 +57,6 @@ export const UserProvider = ({ children }) => {
       setUser(null);
     }
   }, [setUser]);
-
   return (
     <UserContext.Provider value={{ user, setUser, signOut, signIn42 }}>
       {children}

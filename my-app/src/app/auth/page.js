@@ -3,7 +3,6 @@ import styles from "./page.module.scss";
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from './../../providers/UserContext';
 import useAuth from "@/hooks/useAuth";
-import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
   useAuth();
