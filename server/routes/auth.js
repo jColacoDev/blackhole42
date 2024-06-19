@@ -9,11 +9,10 @@ const { generateToken } = require('../utils/utils');
 
 router.post('/signup', async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser)
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'POST auth/signup User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -36,8 +35,7 @@ router.post('/signup', async (req, res) => {
     res.status(201).json({ userId: newUser._id, token });
   } 
   catch (err) {
-    console.error('Error signing up user:', err);
-    res.status(500).json({ message: 'Something went wrong' });
+    res.status(500).json({ message: 'POST auth/signup Server error' });
   }
 });
 
@@ -46,12 +44,12 @@ router.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(400).json({ message: 'User not found login' });
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      return res.status(400).json({ message: 'POST auth/login User not found' });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });    
     res.json({ user, token });
   }
   catch (err){
-    res.status(500).json({ message: 'Something went wrong' });
+    res.status(500).json({ message: 'POST auth/login Server error' });
   }
 });
 
@@ -103,8 +101,7 @@ router.get('/callback', async (req, res) => {
     res.redirect(redirectUrl);
 
   } catch (error) {
-    console.error('Error in 42 authentication callback:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'POST auth/callback Server error' });
   }
 });
 

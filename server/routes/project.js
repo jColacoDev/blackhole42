@@ -11,9 +11,8 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     const { cursus_id, update } = req.query;
-    if (!cursus_id) {
-      return res.status(400).json({ message: 'cursus_id is required' });
-    }
+    if (!cursus_id)
+      return res.status(400).json({ message: 'GET /projects cursus_id is required' });
     try {
       if (update === 'true') {
         const tokenResponse = await axios.post('https://api.intra.42.fr/oauth/token', {
@@ -60,68 +59,55 @@ router.get('/', async (req, res) => {
         res.json(projects);
       }
     } catch (error) {
-      console.error('Error processing request:', error);
-      res.status(500).json({ message: 'Server error' });
+      res.status(500).json({ message: 'GET /projects Server error' });
     }
   });
   
   router.get('/myproject', requireAuth, async (req, res) => {
     const user_id = req.user.id;
-  
     try {
       const user = await User.findById(user_id).populate('myProjects');
       if (!user)
-        return res.status(404).json({ message: 'User not found /myproject' });
+        return res.status(404).json({ message: 'GET /projects/myproject User not found' });
       res.json(user.myProjects);
     } catch (error) {
-      console.error('Error fetching user projects from the database:', error);
-      res.status(500).json({ message: 'Server error' });
+      res.status(500).json({ message: 'GET /projects/myproject Server error' });
     }
   });
-    
-    const fetchProjectsFromDatabase = async (cursus_id) => {
-        try {
-            const projects = await Project.find({ 'cursus.id': cursus_id });
-            return projects;
-        } catch (error) {
-            console.error('Error fetching projects from the database:', error);
-            throw error;
-        }
-    };
 
-    router.get('/coreproject', async (req, res) => {
-      try {
-        const coreProjects = await CoreProject.find();
-        res.status(200).json(coreProjects);
-      } catch (error) {
-        console.error('Failed to fetch core projects:', error);
-        res.status(500).json({ error: 'Failed to fetch core projects' });
-      }
-    });
+  router.get('/coreproject', async (req, res) => {
+    try {
+      const coreProjects = await CoreProject.find();
+      res.status(200).json(coreProjects);
+    } catch (error){
+      res.status(500).json({ error: 'GET /projects/coreproject Failed to fetch core projects' });
+    }
+  });
 
-    const { Types } = require('mongoose');
-
-    router.put('/myproject/:projectId', async (req, res) => {
-      const projectId = req.params.projectId;
-      const { grade, start_date, end_date } = req.body;
-      try {
-        const updatedProject = await MyProject.findOneAndUpdate(
-          { id: projectId },
-          { grade, start_date, end_date },
-          { new: true }
-        );
-    
-        if (!updatedProject) {
-          return res.status(404).json({ message: 'Project not found' });
-        }
-    
-        res.json(updatedProject);
-      } catch (error) {
-        console.error('Error updating project:', error);
-        res.status(500).json({ message: 'Server error' });
-      }
-    });
-    
+  router.put('/myproject/:projectId', async (req, res) => {
+    const projectId = req.params.projectId;
+    const { grade, start_date, end_date } = req.body;
+    try {
+      const updatedProject = await MyProject.findOneAndUpdate(
+        { id: projectId },
+        { grade, start_date, end_date },
+        { new: true }
+      );
+      if (!updatedProject)
+        return res.status(404).json({ message: 'PUT /projects/myproject/:projectId Project not found' });
+      res.json(updatedProject);
+    } catch (error) {
+      res.status(500).json({ message: 'PUT /projects/myproject/:projectId Server error' });
+    }
+  });
+  
+  const fetchProjectsFromDatabase = async (cursus_id) => {
+    try {;
+      return await Project.find({ 'cursus.id': cursus_id });
+    } catch (error){
+      console.error('Error fetching projects from the database:', error);
+    }
+  };
     
 module.exports = router;
     

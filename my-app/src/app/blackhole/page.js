@@ -9,17 +9,22 @@ import useAuth from "@/hooks/useAuth";
 import { UserContext } from './../../providers/UserContext';
 import styles from "./page.module.scss";
 
-// Utility function to merge projects based on id
-const mergeProjects = (coreProjects, myProjects) => {
+const mergeProjects = (coreProjects, myProjects, projectsUsers) => {
   const projectMap = new Map();
+  const projectsUsersMap = new Map();
 
-  // Add coreProjects to the map
-  coreProjects.forEach(project => {
+  projectsUsers?.forEach(user => {
+    if (!projectsUsersMap.has(user.project.id)) {
+      projectsUsersMap.set(user.project.id, []);
+    }
+    projectsUsersMap.get(user.project.id).push(user);
+  });
+
+  coreProjects?.forEach(project => {
     projectMap.set(project.id, { ...project });
   });
 
-  // Merge myProjects with coreProjects
-  myProjects.forEach(project => {
+  myProjects?.forEach(project => {
     if (projectMap.has(project.id)) {
       projectMap.set(project.id, { ...projectMap.get(project.id), ...project });
     } else {
@@ -27,7 +32,12 @@ const mergeProjects = (coreProjects, myProjects) => {
     }
   });
 
-  return Array.from(projectMap.values());
+  const mergedProjects = Array.from(projectMap.values()).map(project => ({
+    ...project,
+    projects_users: projectsUsersMap.get(project.id) || []
+  }));
+
+  return mergedProjects;
 };
 
 const BlackholePage = () => {
@@ -36,6 +46,7 @@ const BlackholePage = () => {
 
   const [cursus_id, setCursus_id] = useState(0);
   const [name, setName] = useState('');
+  const [projects_users, setProjects_users] = useState([]);
   const [projects, setProjects] = useState([]);
   const [coreProjects, setCoreProjects] = useState([]);
   const [myRank, setMyRank] = useState(0);
@@ -48,27 +59,27 @@ const BlackholePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (projects_users)
+      console.log(projects_users);
+  }, [projects_users]);
+
+  useEffect(() => {
+    if (user)
       fetchUserData();
-    }
   }, [user]);
 
   useEffect(() => {
-    if (cursus_id !== 0) {
+    if (cursus_id !== 0)
       fetchProjects();
-    }
   }, [cursus_id]);
 
   useEffect(() => {
-    if (level) {
+    if (level)
       calculateXpFromLevel(level);
-    }
   }, [level]);
 
   const fetchProjects = async () => {
     try {
-      // const token = localStorage.getItem('authToken');
-
       const myProjectsResponse = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/myproject`, {
         headers: { Authorization: `Bearer ${user?.authToken}` }
       });
@@ -79,19 +90,12 @@ const BlackholePage = () => {
       setCoreProjects(coreProjectsResponse.data);
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch projects:', error);
+      console.error('Blackhole Failed to fetch projects:');
     }
   };
 
   const fetchUserData = async () => {
     try {
-      // const token = localStorage.getItem('authToken');
-      // console.log(token)
-      // if (!token) {
-      //   throw new Error('No token found');
-      // }
-      console.log(user)
-
       const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, {
         headers: {
           Authorization: `Bearer ${user?.authToken}`,
@@ -99,17 +103,16 @@ const BlackholePage = () => {
       });
       const userData = response.data;
 
-      setCursus_id(user.cursus_id ?? 0);
       setWeekly_days(userData.weekly_days ?? '');
       setDaily_hours(userData.daily_hours ?? '');
-      setKickoff_date(formatToYYYYMMDD(user.cursus_user_created_at) ?? '');
       setName(user.login ?? '');
+      setCursus_id(user.cursus_id ?? 0);
       setLevel(user.cursus_user_level ?? 0);
+      setProjects_users(user.projects_users ?? []);
+      setKickoff_date(formatToYYYYMMDD(user.cursus_user_created_at) ?? '');
 
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      if (error.response && error.response.status === 401) {
-      }
+      console.error('Blackhole Error fetching user data');
     }
   };
 
@@ -144,18 +147,16 @@ const BlackholePage = () => {
 
   useEffect(() => {
     if (!loading) {
-      const mergedProjects = mergeProjects(coreProjects, projects);
-
+      const mergedProjects = mergeProjects(coreProjects, projects, projects_users);
+      console.log(mergedProjects);
       if (Array.isArray(mergedProjects) && mergedProjects.length > 0) {
-        const ranksDone = new Array(mergedProjects.length).fill(false); // Start assuming all ranks are not done
-
         mergedProjects.sort((a, b) => a.rank - b.rank);
-
+  
         for (const project of mergedProjects) {
           const { rank, start_date, end_date, grade } = project;
-
+  
           if (!(start_date && end_date && grade >= 100)) {
-            setMyRank(rank)
+            setMyRank(rank);
             return;
           }
         }
@@ -163,7 +164,8 @@ const BlackholePage = () => {
         setMyRank(maxRank + 1);
       }
     }
-  }, [loading, coreProjects, projects]);
+  }, [loading, coreProjects, projects, projects_users]);
+  
 
   return (
     <div>

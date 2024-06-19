@@ -21,33 +21,21 @@ export const UserProvider = ({ children }) => {
     const scope = "public";
     const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
   
-    const authWindow = window.open(authUrl, '_blank');
+    const authWindow = window.open(authUrl);
   
-    const handleMessage = (event) => {
-      // if (event.origin !== window.location.origin) {
-      //   console.log("ignoring unknown origin")
-      //   // Ignore messages from unknown origins
-      //   return;
-      // }
-  
+    const handleMessage = (event) => {  
       const { authToken, authUserData } = event.data;
-  
-      console.log(event.data)
 
       if (authToken && authUserData) {
         try {
-          const parsedUserData = JSON.parse(authUserData);
-          setUser({ ...user, ...parsedUserData, authToken });
+          setUser({ ...user, ...JSON.parse(authUserData), authToken });
           router.push('/');
         } catch (error) {
           console.error('Failed to parse stored user data:', error);
         }
       }
-  
-      // Cleanup
       window.removeEventListener('message', handleMessage);
     };
-  
     window.addEventListener('message', handleMessage);
   };
   

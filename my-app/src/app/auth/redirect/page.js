@@ -23,12 +23,13 @@ export default function RedirectPage() {
         }
 
         const { user: responseUser, token: responseToken } = response.data;
+        const mergedUserData = JSON.stringify({ ...responseUser, ...parsedUserData })
 
         localStorage.setItem('server_user', JSON.stringify(responseUser));
         localStorage.setItem('authToken', responseToken);
-        localStorage.setItem('authUserData', JSON.stringify({ ...responseUser, ...parsedUserData }));
+        localStorage.setItem('authUserData', mergedUserData);
         window.opener.postMessage(
-          { authToken: responseToken, authUserData: JSON.stringify({ ...responseUser, ...parsedUserData }) },
+          { authToken: responseToken, authUserData: mergedUserData },
           window.location.origin
         );
 

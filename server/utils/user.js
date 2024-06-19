@@ -19,20 +19,17 @@ async function findOrCreateUser(userData) {
       });
       await user.save();
 
-      console.log('New user created:', user);
-
       const userProjects = [];
-      const existingProjectIds = new Set(); // Track existing project ids
+      const existingProjectIds = new Set();
 
       for (const project of projects) {
         if (!existingProjectIds.has(project.id)) {
           const existingProject = await MyProject.findOne({ id: project.id });
 
           if (!existingProject) {
-            // Create a new MyProject document for each CoreProject
             const newProject = new MyProject({
               id: project.id,
-              email: userData.email, // User's email
+              email: userData.email,
               grade: 0,
               start_date: null,
               end_date: null,
@@ -41,24 +38,20 @@ async function findOrCreateUser(userData) {
             userProjects.push(savedProject);
             existingProjectIds.add(project.id);
           } else {
-            console.warn(`Skipping duplicate project with id ${project.id}`);
+            // console.warn(`Skipping duplicate project with id ${project.id}`);
           }
         } else {
-          console.warn(`Skipping duplicate project with id ${project.id}`);
+          // console.warn(`Skipping duplicate project with id ${project.id}`);
         }
       }
-
-      // Update user with the seeded projects
       user.myProjects = userProjects.map(project => project._id);
       await user.save();
-
-      console.log('Updated user with projects:', user);
     }
 
     return user;
   } catch (error) {
-    console.error('Error in findOrCreateUser:', error);
-    throw error; // Ensure errors are propagated up for proper error handling
+    console.error('Server Error in findOrCreateUser:', error);
+    throw error;
   }
 }
 

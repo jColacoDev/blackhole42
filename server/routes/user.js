@@ -9,11 +9,10 @@ router.get('/', requireAuth, async (req, res) => {
     const userId = req.user.id;
     const user = await User.findById(userId);
     if (!user)
-      return res.status(404).json({ message: 'User not found get /user' });
+      return res.status(404).json({ message: 'GET /user not found get user' });
     res.json(user);
   } catch (error) {
-    console.error('Error fetching user profile:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'GET /user Server error' });
   }
 });
 
@@ -22,7 +21,7 @@ router.put('/', requireAuth, async (req, res) => {
     const userId = req.user.id;
     const user = await User.findById(userId);
     if (!user)
-      return res.status(404).json({ message: 'User not found put /user)' });
+      return res.status(404).json({ message: 'PUT /user user not found)' });
 
     if (req.body.email) user.email = req.body.email;
     if (req.body.password) user.password = await bcrypt.hash(req.body.password, 10);
@@ -32,8 +31,7 @@ router.put('/', requireAuth, async (req, res) => {
     const updatedUser = await user.save();
     res.json(updatedUser);
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'PUT /user user Server error' });
   }
 });
 
