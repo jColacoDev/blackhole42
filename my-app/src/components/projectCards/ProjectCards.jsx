@@ -1,6 +1,8 @@
+"use client"
 import React, { useState, useEffect } from 'react';
 import { cards_scss, rank_section, projects_section } from './styles.module.scss';
 import axios from 'axios';
+import styles from "./styles.module.scss";
 
 export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0, setProjects }) {
   const [openRanks, setOpenRanks] = useState({});
@@ -134,65 +136,70 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
           <div className={projects_section} style={{ display: openRanks[rankInfo.rank] ? 'flex' : 'none' }}>
             {Object.values(rankInfo.groups).map(groupInfo => {
               const { group, projects: projectsIds } = groupInfo;
+  
+              const renderProjectArticle = (projectId) => {
+                const project = projects.find(p => p.id === projectId && p.rank === rankInfo.rank);
+                const projectUsers = project ? project.projects_users : [];
+                const isValidated = projectUsers.some(user => user.final_mark > 99);
+                const nextBlackHoleDays = calculateNextBlackHoleDays(project);
+                const { grade = '', start_date = '', end_date = '' } = projectInputs[projectId] || {};
+  
+                return (
+                  <article key={projectId} className={isValidated ? styles.green : ''}>
+                    <figure>
+                      <span>{project?.name}</span>
+                    </figure>
+                    <ul>
+                      <li><span>Project XP: </span><span>{project?.xp}</span></li>
+                      <li><span>Gained XP: </span><span>{((project?.xp * grade) / 100).toFixed(0)}</span></li>
+                      <li><span>Gained BH days: </span><span>{nextBlackHoleDays}</span></li>
+                    </ul>
+                    <ul>
+                      <li>
+                        <span>Grade</span>
+                        <input
+                          type="number"
+                          value={grade}
+                          min="0"
+                          max={project?.maxGrade}
+                          onChange={(e) => handleInputChange(projectId, 'grade', e.target.value)}
+                        />
+                      </li>
+                      <li>
+                        <span>Start Date</span>
+                        <input
+                          type="date"
+                          value={start_date}
+                          onChange={(e) => handleInputChange(projectId, 'start_date', e.target.value)}
+                        />
+                      </li>
+                      <li>
+                        <span>End Date</span>
+                        <input
+                          type="date"
+                          value={end_date}
+                          disabled={!start_date}
+                          min={start_date}
+                          onChange={(e) => handleInputChange(projectId, 'end_date', e.target.value)}
+                        />
+                      </li>
+                    </ul>
+                    <button onClick={() => handleSave(projectId)}>Project Done</button>
+                  </article>
+                );
+              };
+  
               if (group === 0) {
-                return projectsIds.map(projectId => {
-                  const project = projects.find(p => p.id === projectId && p.rank === rankInfo.rank);
-                  const nextBlackHoleDays = calculateNextBlackHoleDays(project);
-                  const { grade = '', start_date = '', end_date = '' } = projectInputs[projectId] || {};
-
-                  return (
-                    <article key={projectId}>
-                      <figure>
-                        <span>{project?.name}</span>
-                      </figure>
-                      <ul>
-                        <li><span>Project XP: </span><span>{project?.xp}</span></li>
-                        <li><span>Gained XP: </span><span>{((project?.xp * grade) / 100).toFixed(0)}</span></li>
-                        <li><span>Gained BH days: </span><span>{nextBlackHoleDays}</span></li>
-                      </ul>
-                      <ul>
-                        <li>
-                          <span>Grade</span>
-                          <input
-                            type="number"
-                            value={grade}
-                            min="0"
-                            max={project?.maxGrade}
-                            onChange={(e) => handleInputChange(projectId, 'grade', e.target.value)}
-                          />
-                        </li>
-                        <li>
-                          <span>Start Date</span>
-                          <input
-                            type="date"
-                            value={start_date}
-                            onChange={(e) => handleInputChange(projectId, 'start_date', e.target.value)}
-                          />
-                        </li>
-                        <li>
-                          <span>End Date</span>
-                          <input
-                            type="date"
-                            value={end_date}
-                            disabled={!start_date}
-                            min={start_date}
-                            onChange={(e) => handleInputChange(projectId, 'end_date', e.target.value)}
-                          />
-                        </li>
-                      </ul>
-                      <button onClick={() => handleSave(projectId)}>Project Done</button>
-                    </article>
-                  );
-                });
+                return projectsIds.map(projectId => renderProjectArticle(projectId));
               } else {
                 const groupProjects = projectsExistsInGroup(groupInfo.projects);
                 const selectedProjectId = selectedProjects[group] || (groupProjects.length > 0 ? groupProjects[0].id : null);
                 const selectedProject = groupProjects.find(p => p.id === selectedProjectId);
                 const nextBlackHoleDays = calculateNextBlackHoleDays(selectedProject);
                 const { grade = '', start_date = '', end_date = '' } = projectInputs[selectedProjectId] || {};
-
+  
                 return (
-                  <article key={group}>
+                  <article key={group} className={selectedProject && selectedProject.projects_users.some(user => user.validated) ? 'green' : ''}>
                     <figure>
                       {groupProjects.map(proj => (
                         <span
