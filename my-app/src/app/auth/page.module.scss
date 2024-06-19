@@ -1,18 +1,15 @@
-$left-color:  #242e4d;
-$right-color: #897e79;
 $green-dark:  #35c3c1;
 $green-light: #00d6b7;
-$gray:        #8f8f8f;
-$gray-light:  #f5f6f8;
-
-// * {
-//   -webkit-font-smoothing: antialiased;
-//   text-rendering: optimizeLegibility;
-// }
-// ::placeholder { color: $gray; }
 
 .login_form {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2em;
+  color: whitesmoke;
+
+  width: 20em;
   padding: 2em;
   position: relative;
   background: rgba(black, .15);
@@ -29,71 +26,40 @@ $gray-light:  #f5f6f8;
       $green-light
     );    
   }
-  
-  @media screen and (min-width: 600px) {
-    width: 50vw;
-    max-width: 15em;
-  }
-}
-
-.flex_row {
-    display: flex;
-    margin-bottom: 1em;
-}
-
-.lf_label {
-    width: 2em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: $gray-light;
-    cursor: pointer;
-}
-.lf_input {
-    flex: 1;
-    padding: 1em;
-    border: 0;
-    color: $gray;
-    font-size: 1rem;
-
-    &:focus {
-        outline: none;
-        transition: transform .15s ease;
-        transform: scale(1.1);
-    }
 }
 
 .lf_submit {
-    display: block;
-    padding: 1em;
-    width: 100%;
-    background: linear-gradient(
-        to right,
-        $green-dark,
-        $green-light
-    );
-    border: 0;
-    color: #fff;
-    cursor: pointer;
-    font-size: .75em;
-    font-weight: 600;
-    text-shadow: 0 1px 0 rgba(black, .2);
+  color: #fff;
+  padding: 1em;
+  width: 100%;
+  max-width: 15em;
+  background: linear-gradient(to right, $green-dark, $green-light);
+  cursor: pointer;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-    &:focus {
-        outline: none;
-        transition: transform .15s ease;
-        transform: scale(1.1);
-    }
+  &:focus {
+    outline: none;
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(255, 255, 255, 0.3);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(255, 255, 255, 0.3);
+  }
+
+  &:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.2);
+  }
 }
 
-.lf_forgot {
-  margin-top: 1em;
-  color: $green-light;
-  font-size: .65em;
-  text-align: center;
-  position: relative;
-}
 
 .page {
     min-height: 100%;

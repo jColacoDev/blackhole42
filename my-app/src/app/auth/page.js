@@ -3,9 +3,12 @@ import styles from "./page.module.scss";
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from './../../providers/UserContext';
 import useAuth from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
   useAuth();
+
+  const router = useRouter();
 
   const { user, setUser, signOut, signIn42 } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
@@ -27,15 +30,13 @@ export default function AuthPage() {
       const authToken = localStorage.getItem('authToken');
       if (storedUser && authToken) {
         setUser({ ...storedUser, authToken });
-        setLoading(false); // Stop loading when user is set
+        setLoading(false);
+        router.push("/");
       } else {
         setUser(null);
       }
     };
-
     window.addEventListener('storage', handleStorageChange);
-
-    // Initial check in case the data is already in localStorage
     handleStorageChange();
 
     return () => {
@@ -46,8 +47,8 @@ export default function AuthPage() {
   return (
     <section className={styles.page}>
       {user ? (
-        <div>
-          <p>Hello {user.first_name}</p>
+        <div className={styles.login_form}>
+          <h2>Hello {user.first_name}</h2>
           <button onClick={handleSignOut} className={styles.lf_submit}>Sign Out</button>
         </div>
       ) : loading ? (
