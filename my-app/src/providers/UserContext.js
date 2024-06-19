@@ -47,6 +47,17 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
+  useEffect(() => {
+    const authToken = localStorage.getItem('authToken');
+    const authUserData = JSON.parse(localStorage.getItem('authUserData'));
+
+    if (authToken && authUserData) {
+      setUser({ ...authUserData, authToken });
+    } else {
+      setUser(null);
+    }
+  }, [setUser]);
+  
   return (
     <UserContext.Provider value={{ user, setUser, signOut, signIn42 }}>
       {children}
