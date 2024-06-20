@@ -1,14 +1,14 @@
-.rank_section{
-    display: flex;
-    flex-direction: column;
-}
-.projects_section{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1em;
-}
-
 .cards_scss {
+
+    .rank_section{
+        display: flex;
+        flex-direction: column;
+    }
+    .projects_section{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1em;
+    }
     display: flex;
     flex-direction: column;
     gap: 1em;
@@ -69,14 +69,19 @@
             justify-content: space-between;
         }
     }
-}
-
-.red{
-    background-color: #ff000080;
-}
-.green{
-    background-color: #1eff0080;
-}
-.orange{
-    background-color: #ffe10080;
+    .maxGrade{
+        background-color: #00ffd080;
+    }
+    .topGrade{
+        background-color: #bfff0080;
+    }
+    .failed{
+        background-color: #ff000080;
+    }
+    .passed{
+        background-color: #1eff0080;
+    }
+    .in_progress{
+        background-color: #ffe10080;
+    }
 }

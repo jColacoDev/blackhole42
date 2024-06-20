@@ -47,6 +47,7 @@ const BlackholePage = () => {
   const [cursus_id, setCursus_id] = useState(0);
   const [name, setName] = useState('');
   const [projects_users, setProjects_users] = useState([]);
+  const [mergedProjects, setMergedProjects] = useState([]);
   const [projects, setProjects] = useState([]);
   const [coreProjects, setCoreProjects] = useState([]);
   const [myRank, setMyRank] = useState(0);
@@ -58,10 +59,11 @@ const BlackholePage = () => {
   const [myCurrentBlackHole, setMyCurrentBlackHole] = useState("19/10/2024");
   const [loading, setLoading] = useState(true);
 
+  
   useEffect(() => {
     if (projects_users)
-      console.log(projects_users);
-  }, [projects_users]);
+      setProjects_users(user?.projects_users);
+  }, [user?.projects_users]);
 
   useEffect(() => {
     if (user)
@@ -108,7 +110,8 @@ const BlackholePage = () => {
       setName(user.login ?? '');
       setCursus_id(user.cursus_id ?? 0);
       setLevel(user.cursus_user_level ?? 0);
-      setProjects_users(user.projects_users ?? []);
+      // console.log(user)
+      // setProjects_users(user.projects_users ?? []);
       setKickoff_date(formatToYYYYMMDD(user.cursus_user_created_at) ?? '');
 
     } catch (error) {
@@ -148,13 +151,11 @@ const BlackholePage = () => {
   useEffect(() => {
     if (!loading) {
       const mergedProjects = mergeProjects(coreProjects, projects, projects_users);
-      console.log(mergedProjects);
+      setMergedProjects(mergedProjects);
       if (Array.isArray(mergedProjects) && mergedProjects.length > 0) {
         mergedProjects.sort((a, b) => a.rank - b.rank);
-  
         for (const project of mergedProjects) {
           const { rank, start_date, end_date, grade } = project;
-  
           if (!(start_date && end_date && grade >= 100)) {
             setMyRank(rank);
             return;
@@ -186,7 +187,7 @@ const BlackholePage = () => {
           />
           <ProjectCards 
             user={user} 
-            projects={mergeProjects(coreProjects, projects)} 
+            projects={mergedProjects} 
             myXp={myXp} 
             myRank={myRank} 
             setProjects={setProjects} // Pass the setProjects function

@@ -1,8 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { cards_scss, rank_section, projects_section } from './styles.module.scss';
 import axios from 'axios';
-import styles from "./styles.module.scss";
+import "./styles.scss";
 
 export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0, setProjects }) {
   const [openRanks, setOpenRanks] = useState({});
@@ -121,31 +120,47 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
     }));
   };
 
-  const projectsByRank = processProjects();
-
   const projectsExistsInGroup = (groupProjects) => {
     const selectedProjects = projects.filter(project => groupProjects?.includes(project.id));
     return selectedProjects || [];
   };
 
+  const projectValidation = (maxGrade, projectUser) => {
+    if(projectUser){
+      if (projectUser.status == "in_progress")
+        return "in_progress";
+      if(projectUser?.marked){
+        if (projectUser.final_mark == maxGrade)
+          return "maxGrade";
+        else if (projectUser?.final_mark > 120)
+          return "topGrade";
+        else if (projectUser?.final_mark > 99)
+          return "passed";
+        else
+          return "failed";
+      } else
+        return "toDo"
+    }
+  }
+
   return (
-    <section className={cards_scss}>
-      {Object.values(projectsByRank).map(rankInfo => (
-        <div className={rank_section} key={rankInfo.rank}>
+    <section className="cards_scss">
+      {Object.values(processProjects()).map(rankInfo => (
+        <div className="rank_section" key={rankInfo.rank}>
           <h2 onClick={() => toggleRank(rankInfo.rank)}>Rank {rankInfo.rank}</h2>
-          <div className={projects_section} style={{ display: openRanks[rankInfo.rank] ? 'flex' : 'none' }}>
+          <div className="projects_section" style={{ display: openRanks[rankInfo.rank] ? 'flex' : 'none' }}>
             {Object.values(rankInfo.groups).map(groupInfo => {
               const { group, projects: projectsIds } = groupInfo;
+              console.log(projects)
   
               const renderProjectArticle = (projectId) => {
                 const project = projects.find(p => p.id === projectId && p.rank === rankInfo.rank);
-                const projectUsers = project ? project.projects_users : [];
-                const isValidated = projectUsers.some(user => user.final_mark > 99);
+                const projectUsers = project ? project?.projects_users : [];
+                const projectUser = projectUsers[0];
                 const nextBlackHoleDays = calculateNextBlackHoleDays(project);
                 const { grade = '', start_date = '', end_date = '' } = projectInputs[projectId] || {};
-  
                 return (
-                  <article key={projectId} className={isValidated ? styles.green : ''}>
+                  <article key={projectId} className={ projectValidation(project?.maxGrade, projectUser)}>
                     <figure>
                       <span>{project?.name}</span>
                     </figure>
@@ -154,37 +169,40 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
                       <li><span>Gained XP: </span><span>{((project?.xp * grade) / 100).toFixed(0)}</span></li>
                       <li><span>Gained BH days: </span><span>{nextBlackHoleDays}</span></li>
                     </ul>
-                    <ul>
-                      <li>
-                        <span>Grade</span>
-                        <input
-                          type="number"
-                          value={grade}
-                          min="0"
-                          max={project?.maxGrade}
-                          onChange={(e) => handleInputChange(projectId, 'grade', e.target.value)}
-                        />
-                      </li>
-                      <li>
-                        <span>Start Date</span>
-                        <input
-                          type="date"
-                          value={start_date}
-                          onChange={(e) => handleInputChange(projectId, 'start_date', e.target.value)}
-                        />
-                      </li>
-                      <li>
-                        <span>End Date</span>
-                        <input
-                          type="date"
-                          value={end_date}
-                          disabled={!start_date}
-                          min={start_date}
-                          onChange={(e) => handleInputChange(projectId, 'end_date', e.target.value)}
-                        />
-                      </li>
-                    </ul>
-                    <button onClick={() => handleSave(projectId)}>Project Done</button>
+
+                    {!(projectUser?.final_mark > 99) && <>
+                      <ul>
+                        <li>
+                          <span>Grade</span>
+                          <input
+                            type="number"
+                            value={grade}
+                            min="0"
+                            max={project?.maxGrade}
+                            onChange={(e) => handleInputChange(projectId, 'grade', e.target.value)}
+                          />
+                        </li>
+                        <li>
+                          <span>Start Date</span>
+                          <input
+                            type="date"
+                            value={start_date}
+                            onChange={(e) => handleInputChange(projectId, 'start_date', e.target.value)}
+                          />
+                        </li>
+                        <li>
+                          <span>End Date</span>
+                          <input
+                            type="date"
+                            value={end_date}
+                            disabled={!start_date}
+                            min={start_date}
+                            onChange={(e) => handleInputChange(projectId, 'end_date', e.target.value)}
+                          />
+                        </li>
+                      </ul>
+                      <button onClick={() => handleSave(projectId)}>Project Done</button>
+                    </>}
                   </article>
                 );
               };
