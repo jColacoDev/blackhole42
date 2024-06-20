@@ -1,10 +1,11 @@
 .topBanner_scss {
     position: relative;
-    min-height: 300px;
+    min-height: 314px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 1em;
+    width: 100%;
     
     color: var(--light-white);
     background-image: url(https://cdn.intra.42.fr/coalition/cover/475/ubuntu-coalition-banner.jpg);

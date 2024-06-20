@@ -1,5 +1,5 @@
 import React from 'react';
-import { topBanner_scss } from './styles.module.scss';
+import './style.scss';
 
 export default function TopBanner({kickoff_date, weekly_days, daily_hours}) {
   const data = {
@@ -8,19 +8,19 @@ export default function TopBanner({kickoff_date, weekly_days, daily_hours}) {
   };
 
   return (
-    <section className={topBanner_scss}>
+    <section className="topBanner_scss">
       <article>
         <ul>
-          <li><span>Kickoff Date:</span> <span>{kickoff_date}</span></li>
-          <li><span>Weekly Days:</span> <span>{weekly_days}d</span></li>
-          <li><span>Daily Hours:</span> <span>{daily_hours}h</span></li>
+          {kickoff_date && <li><span>Kickoff Date:</span> <span>{kickoff_date}</span></li>}
+          {weekly_days && <li><span>Weekly Days:</span> <span>{weekly_days}d</span></li>}
+          {daily_hours && <li><span>Daily Hours:</span> <span>{daily_hours}h</span></li>}
         </ul>
       </article>
       <article>
         <ul>
-          <li><span>BlackHole Total:</span> <span>{data.blackhole_total}d</span></li>
-          <li><span>BlackHole Received:</span> <span>77d</span></li>
-          <li><span>BlackHole Remaining:</span> <span>583d</span></li>
+          {kickoff_date && <li><span>BlackHole Total:</span> <span>{data.blackhole_total}d</span></li>}
+          {kickoff_date && <li><span>BlackHole Received:</span> <span>77d</span></li>}
+          {kickoff_date && <li><span>BlackHole Remaining:</span> <span>583d</span></li>}
         </ul>
       </article>
     </section>
