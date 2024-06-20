@@ -1,6 +1,7 @@
-"use client"
+"use client";
 import React, { createContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 export const UserContext = createContext();
 
@@ -21,30 +22,47 @@ export const UserProvider = ({ children }) => {
     const scope = "public";
     const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
   
-    const authWindow = window.open(authUrl);
-  
-    const handleMessage = (event) => {  
-      const { authToken, authUserData } = event.data;
-
-      if (authToken && authUserData) {
-        try {
-          setUser({ ...user, ...JSON.parse(authUserData), authToken });
-          router.push('/');
-        } catch (error) {
-          console.error('Failed to parse stored user data:', error);
-        }
-      }
-      window.removeEventListener('message', handleMessage);
-    };
-    window.addEventListener('message', handleMessage);
+    window.open(authUrl);
   };
-  
+
+  const handleAuthCallback = async (event) => {
+    if (event.origin !== window.location.origin) return;
+
+    const { authToken, authUserData } = event.data;
+
+    if (authToken && authUserData) {
+      try {
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('authUserData', JSON.stringify(authUserData));
+        setUser({ ...JSON.parse(authUserData), authToken });
+        await fetchUserData(authToken);
+        router.push('/');
+      } catch (error) {
+        console.error('Failed to parse stored user data:', error);
+      }
+    }
+    window.removeEventListener('message', handleAuthCallback);
+  };
+
+  const fetchUserData = async (token) => {
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const userData = response.data;
+      setUser((prevUser) => ({ ...prevUser, ...userData }));
+    } catch (error) {
+      console.error('Error fetching user data', error);
+    }
+  };
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('authUserData'));
-    if (storedUser) {
-      setUser(storedUser);
-    }
+    window.addEventListener('message', handleAuthCallback);
+    return () => {
+      window.removeEventListener('message', handleAuthCallback);
+    };
   }, []);
 
   useEffect(() => {
@@ -53,10 +71,10 @@ export const UserProvider = ({ children }) => {
 
     if (authToken && authUserData) {
       setUser({ ...authUserData, authToken });
-    } else {
-      setUser(null);
+      fetchUserData(authToken);
     }
-  }, [setUser]);
+  }, []);
+
   return (
     <UserContext.Provider value={{ user, setUser, signOut, signIn42 }}>
       {children}

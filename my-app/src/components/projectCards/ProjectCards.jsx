@@ -10,7 +10,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
 
   useEffect(() => {
     const initialInputs = {};
-    projects.forEach(project => {
+    projects?.forEach(project => {
       initialInputs[project?.id] = {
         grade: project?.grade || '',
         start_date: project?.start_date ? new Date(project?.start_date).toISOString().substr(0, 10) : '',
@@ -28,7 +28,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
 
   const processProjects = () => {
     const projectsByRank = {};
-    projects.forEach(project => {
+    projects?.forEach(project => {
       const { id, rank, group } = project;
       if (!projectsByRank[rank]) {
         projectsByRank[rank] = {
@@ -65,6 +65,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
   };
 
   const calculateNextBlackHoleDays = (project) => {
+    //here
 
     if (project?.grade && project?.start_date && project?.end_date) {
       const nextBlackHoleDays = (Math.pow((myXp + project?.xp) / 49980, 0.45) - Math.pow(myXp / 49980, 0.45)) * 483;
@@ -88,7 +89,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
     const { grade, start_date, end_date } = projectInputs[projectId];
 
     try {
-      const response = await axios.put(
+      await axios.put(
         `${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/myproject/${projectId}`,
         {
           grade,
@@ -151,8 +152,6 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
           <div className="projects_section" style={{ display: openRanks[rankInfo.rank] ? 'flex' : 'none' }}>
             {Object.values(rankInfo.groups).map(groupInfo => {
               const { group, projects: projectsIds } = groupInfo;
-              console.log(projects)
-  
               const renderProjectArticle = (projectId) => {
                 const project = projects.find(p => p.id === projectId && p.rank === rankInfo.rank);
                 const projectUsers = project ? project?.projects_users : [];
@@ -161,11 +160,12 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
                 const { grade = '', start_date = '', end_date = '' } = projectInputs[projectId] || {};
                 return (
                   <article key={projectId} className={ projectValidation(project?.maxGrade, projectUser)}>
-                    <figure>
+                    <header>
                       <span>{project?.name}</span>
-                    </figure>
+                    </header>
                     <ul>
                       <li><span>Project XP: </span><span>{project?.xp}</span></li>
+                      <li><span>Grade: </span><span>{projectUser?.final_mark ? projectUser?.final_mark : 0}</span></li>
                       <li><span>Gained XP: </span><span>{((project?.xp * grade) / 100).toFixed(0)}</span></li>
                       <li><span>Gained BH days: </span><span>{nextBlackHoleDays}</span></li>
                     </ul>
@@ -173,7 +173,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
                     {!(projectUser?.final_mark > 99) && <>
                       <ul>
                         <li>
-                          <span>Grade</span>
+                          <span>Expected Grade</span>
                           <input
                             type="number"
                             value={grade}

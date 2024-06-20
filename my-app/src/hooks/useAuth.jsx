@@ -49,7 +49,7 @@ const useAuth = () => {
   };
 
   useEffect(() => {
-    console.log(user)
+    // console.log(user)
     if (!user?.authToken) {
       checkAuth();
     }

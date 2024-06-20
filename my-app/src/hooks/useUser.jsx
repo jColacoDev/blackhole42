@@ -2,7 +2,6 @@ import { useContext, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { UserContext } from '@/providers/UserContext';
-import useAuth from "@/hooks/useAuth";
 
 const useUser = () => {
   const router = useRouter();
@@ -18,7 +17,6 @@ const useUser = () => {
         if (storedAuthToken) {
           authToken = storedAuthToken;
           const parsedUserData = JSON.parse(authUserData);
-
           setUser({ ...user,...parsedUserData, authToken });
         } else {
           throw new Error('No token found');
