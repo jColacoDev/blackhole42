@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/user');
 const { requireAuth } = require('../middleware/authMiddleware'); // Import middleware
 const bcrypt = require('bcryptjs');
+const Level = require('../models/level');
 
 router.get('/', requireAuth, async (req, res) => {
   try {
@@ -13,6 +14,18 @@ router.get('/', requireAuth, async (req, res) => {
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: 'GET /user Server error' });
+  }
+});
+
+router.get('/levels', async (req, res) => {
+  console.log("here")
+  try {
+    const levels = await Level.find();
+    console.log("levels",levels)
+    res.status(200).json(levels);
+  } catch (error) {
+    console.error('Error fetching levels:', error);
+    res.status(500).json({ message: 'GET /levels Server error' });
   }
 });
 
