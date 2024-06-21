@@ -7,6 +7,9 @@
     z-index: 19;
     padding: 0 2em;
     justify-content: center;
+    background-color: var(--light-white);
+    height: 60px;
+    color: var(--dark-dark);
 
     > div{
         display: flex;

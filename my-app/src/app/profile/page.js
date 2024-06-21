@@ -4,6 +4,7 @@ import styles from './page.module.scss';
 import axios from 'axios';
 import useAuth from "@/hooks/useAuth";
 import { UserContext } from './../../providers/UserContext';
+import { formatToYYYYMMDD } from '@/utils/utils';
 
 export default function ProfilePage() {
   useAuth();
@@ -45,14 +46,6 @@ export default function ProfilePage() {
       console.error('Error updating user:', error);
       setError('Failed to update user');
     }
-  };
-
-  const formatToYYYYMMDD = (dateString) => {
-    const date = new Date(dateString);
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
   };
 
   return (

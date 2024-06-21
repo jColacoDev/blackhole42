@@ -53,13 +53,6 @@ main {
   flex-direction: column;
 }
 
-header {
-    display: flex;
-    height: 60px;
-    background-color: var(--light-white);
-    color: var(--dark-dark);
-}
-
 footer {
   color: whitesmoke;
   height: 100px;

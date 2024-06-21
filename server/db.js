@@ -71,42 +71,36 @@ const projects = [
         id: 1314,
         name: "Libft",
         rank: 0,
-        xp: 462,
         maxGrade: 125
     },
     {
         id: 1327,
         name: "get_next_line",
         rank: 1,
-        xp: 882,
         maxGrade: 125
     },
     {
         id: 1316,
         name: "ft_printf",
         rank: 1,
-        xp: 882,
         maxGrade: 125
     },
     {
         id: 1994,
         name: "Born2beroot",
         rank: 1,
-        xp: 577,
         maxGrade: 125
     },
     {
         id: 1471,
         name: "push_swap",
         rank: 2,
-        xp: 1855,
         maxGrade: 125
     },
     {
         id: 2005,
         name: "minitalk",
         rank: 2,
-        xp: 1142,
         maxGrade: 125,
         group: 1,
     },
@@ -114,7 +108,6 @@ const projects = [
         id: 2004,
         name: "pipex",
         rank: 2,
-        xp: 1142,
         maxGrade: 125,
         group: 1,
     },
@@ -122,7 +115,6 @@ const projects = [
         id: 2009,
         name: "so_long",
         rank: 2,
-        xp: 1000,
         maxGrade: 125,
         group: 2,
     },
@@ -130,7 +122,6 @@ const projects = [
         id: 1476,
         name: "fract-ol",
         rank: 2,
-        xp: 1000,
         maxGrade: 125,
         group: 2,
     },
@@ -138,7 +129,6 @@ const projects = [
         id: 2008,
         name: "fdf",
         rank: 2,
-        xp: 1000,
         maxGrade: 125,
         group: 2,
     },
@@ -146,21 +136,18 @@ const projects = [
         id: 1334,
         name: "Philosophers",
         rank: 3,
-        xp: 3360,
         maxGrade: 125
     },
     {
         id: 1331,
         name: "minishell",
         rank: 3,
-        xp: 2814,
         maxGrade: 125
     },
     {
         id: 1326,
         name: "Cub3D",
         rank: 4,
-        xp: 5775,
         maxGrade: 125,
         group: 1,
     },
@@ -168,7 +155,6 @@ const projects = [
         id: 1315,
         name: "miniRT",
         rank: 4,
-        xp: 5775,
         maxGrade: 125,
         group: 1,
     },
@@ -176,49 +162,42 @@ const projects = [
         id: 2007,
         name: "NetPractice",
         rank: 4,
-        xp: 3160,
         maxGrade: 100
     },
     {
         id: 2364,
         name: "Piscine CPP",
         rank: 4,
-        xp: 9660,
         maxGrade: 100
     },
     {
         id: 1335,
         name: "ft_containers",
         rank: 5,
-        xp: 10042,
         maxGrade: 125
     },
     {
         id: 1983,
         name: "Inception",
         rank: 5,
-        xp: 10042,
         maxGrade: 125
     },
     {
         id: 1332,
         name: "webserv",
         rank: 5,
-        xp: 21630,
         maxGrade: 125
     },
     {
         id: 1336,
         name: "ft_irc",
         rank: 5,
-        xp: 21630,
         maxGrade: 125
     },
     {
         id: 1337,
         name: "ft_transcendence",
         rank: 6,
-        xp: 24360,
         maxGrade: 100
     },
 ]
@@ -229,7 +208,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -237,7 +215,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -245,7 +222,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -253,7 +229,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -261,7 +236,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -269,7 +243,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -277,7 +250,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -285,7 +257,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -293,7 +264,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -301,7 +271,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -309,7 +278,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -317,7 +285,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -325,7 +292,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -333,7 +299,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -341,7 +306,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
     {
@@ -349,7 +313,6 @@ const projectsUserDb = [
         start_date: "",
         finish_date: "",
         gained_bh_days: 0,
-        gained_xp: 0,
         score: 0,
     },
 ]

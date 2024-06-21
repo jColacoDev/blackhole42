@@ -2,40 +2,53 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./styles.scss";
+import { daysBetweenDates, formatToYYYYMMDD } from '../../utils/utils';
 
-export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0, setProjects }) {
+export default function ProjectCards({ user, projects = [], setProjects, xp = 0, rank = 0 }) {
+  const [processedProjects, setProcessedProjects] = useState([]);
   const [openRanks, setOpenRanks] = useState({});
   const [projectInputs, setProjectInputs] = useState({});
   const [selectedProjects, setSelectedProjects] = useState({});
 
   useEffect(() => {
-    const initialInputs = {};
-    projects?.forEach(project => {
-      initialInputs[project?.id] = {
-        grade: project?.grade || '',
-        start_date: project?.start_date ? new Date(project?.start_date).toISOString().substr(0, 10) : '',
-        end_date: project?.end_date ? new Date(project?.end_date).toISOString().substr(0, 10) : ''
-      };
-    });
-    setProjectInputs(initialInputs);
+    if(projects){
+      const initialInputs = {};
+      projects?.forEach(project => {
+        initialInputs[project?.id] = {
+          grade: project?.grade || '',
+          start_date: project?.start_date ? new Date(project?.start_date).toISOString().slice(0, 10) : '',
+          end_date: project?.end_date ? new Date(project?.end_date).toISOString().slice(0, 10) : ''
+        };
+      });
+      setProjectInputs(initialInputs);
+      setProcessedProjects(processProjects());
+    }
+
   }, [projects]);
 
   useEffect(() => {
-    if (myRank !== undefined) {
-      setOpenRanks({ [myRank]: true });
+    if (rank !== undefined) {
+      setOpenRanks({ [rank]: true });
     }
-  }, [myRank]);
+  }, [rank]);
 
   const processProjects = () => {
     const projectsByRank = {};
+  
     projects?.forEach(project => {
       const { id, rank, group } = project;
+  
       if (!projectsByRank[rank]) {
         projectsByRank[rank] = {
           rank,
-          groups: {}
+          groups: {},
+          totalOccurrences: 0,
+          created_at: null,
+          marked_at: null,
+          status: "unseen"
         };
       }
+  
       if (!group || group === 0) {
         if (!projectsByRank[rank].groups[0]) {
           projectsByRank[rank].groups[0] = {
@@ -54,8 +67,40 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
         projectsByRank[rank].groups[group].projects.push(id);
       }
     });
+    let allProjectsFinished = true;
+    projects?.forEach(project => {
+      const { rank, projects_users } = project;
+      const totalOccurrences = projects_users.reduce((acc, userProject) => acc + (userProject.occurrence || 0), 0);
+      projectsByRank[rank].totalOccurrences += totalOccurrences;
+  
+      projects_users.forEach(userProject => {
+        const { created_at, marked_at, final_mark } = userProject;
+  
+        // Update created_at
+        if (!projectsByRank[rank].created_at || new Date(created_at) < new Date(projectsByRank[rank].created_at)) {
+          projectsByRank[rank].created_at = created_at;
+        }
+  
+        // Update marked_at
+        if (!projectsByRank[rank].marked_at || new Date(marked_at) > new Date(projectsByRank[rank].marked_at)) {
+          projectsByRank[rank].marked_at = marked_at;
+        }
+        // Determine if this project is finished
+        if (!final_mark || final_mark <= 99) {
+          allProjectsFinished = false;
+        }
+      });
+      // Set status based on the analysis
+      if (allProjectsFinished && projects_users.length > 0) {
+        projectsByRank[rank].status = "finished";
+      } else if (projects_users.length > 0 && projectsByRank[rank].status !== "finished") {
+        projectsByRank[rank].status = "ongoing";
+      }
+    });
+  
     return projectsByRank;
   };
+  
 
   const toggleRank = (rank) => {
     setOpenRanks(prevState => ({
@@ -65,10 +110,8 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
   };
 
   const calculateNextBlackHoleDays = (project) => {
-    //here
-
     if (project?.grade && project?.start_date && project?.end_date) {
-      const nextBlackHoleDays = (Math.pow((myXp + project?.xp) / 49980, 0.45) - Math.pow(myXp / 49980, 0.45)) * 483;
+      const nextBlackHoleDays = (Math.pow((xp + project?.xp) / 49980, 0.45) - Math.pow(xp / 49980, 0.45)) * 483;
       return nextBlackHoleDays.toFixed(2);
     }
 
@@ -146,9 +189,16 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
 
   return (
     <section className="cards_scss">
-      {Object.values(processProjects()).map(rankInfo => (
-        <div className="rank_section" key={rankInfo.rank}>
-          <h2 onClick={() => toggleRank(rankInfo.rank)}>Rank {rankInfo.rank}</h2>
+      {Object.values(processedProjects).map(rankInfo => (
+        <div className={`rank_section ${rankInfo.status}`} key={rankInfo.rank}>
+          <h2 onClick={() => toggleRank(rankInfo?.rank)}>Rank {rankInfo?.rank} <br/>
+            {rankInfo?.totalOccurrences > 0 && <>
+              {rankInfo?.totalOccurrences && <span>with&nbsp;{rankInfo.totalOccurrences} {rankInfo.totalOccurrences > 1 ? "tries" : "try"}</span>}
+              {rankInfo?.created_at && <span>&nbsp;from&nbsp;{formatToYYYYMMDD(rankInfo.created_at, { year: false, separator: '/'})}</span>}
+              {rankInfo?.marked_at && <span>&nbsp;to&nbsp;{formatToYYYYMMDD(rankInfo.marked_at, { year: false, separator: '/'})}</span>}
+              {rankInfo?.marked_at && rankInfo?.marked_at && <span>&nbsp; it's {daysBetweenDates(rankInfo.created_at, rankInfo.marked_at)} days</span>}
+            </>}
+          </h2>
           <div className="projects_section" style={{ display: openRanks[rankInfo.rank] ? 'flex' : 'none' }}>
             {Object.values(rankInfo.groups).map(groupInfo => {
               const { group, projects: projectsIds } = groupInfo;
@@ -164,6 +214,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
                       <span>{project?.name}</span>
                     </header>
                     <ul>
+                      <li><span>Retries: </span><span>{projectUser?.occurrence ? projectUser?.occurrence : 0}</span></li>
                       <li><span>Project XP: </span><span>{project?.xp}</span></li>
                       <li><span>Grade: </span><span>{projectUser?.final_mark ? projectUser?.final_mark : 0}</span></li>
                       <li><span>Gained XP: </span><span>{((project?.xp * grade) / 100).toFixed(0)}</span></li>
@@ -218,7 +269,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
   
                 return (
                   <article key={group} className={selectedProject && selectedProject.projects_users.some(user => user.validated) ? 'green' : ''}>
-                    <figure>
+                    <header>
                       {groupProjects.map(proj => (
                         <span
                           key={proj.id}
@@ -228,7 +279,7 @@ export default function ProjectCards({ user, projects = [], myXp = 0, myRank = 0
                           {proj.name}
                         </span>
                       ))}
-                    </figure>
+                    </header>
                     <ul>
                       <li><span>Project XP: </span><span>{selectedProject?.xp}</span></li>
                       <li><span>Gained XP: </span><span>{((selectedProject?.xp * grade) / 100).toFixed(0)}</span></li>

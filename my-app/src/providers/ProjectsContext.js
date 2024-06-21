@@ -5,42 +5,71 @@ import { UserContext } from './UserContext';
 
 export const ProjectsContext = createContext();
 
-const mergeProjects = (coreProjects, myProjects, projectsUsers) => {
-  const projectMap = new Map();
-  const projectsUsersMap = new Map();
-
-  projectsUsers?.forEach(user => {
-    if (!projectsUsersMap.has(user.project.id)) {
-      projectsUsersMap.set(user.project.id, []);
-    }
-    projectsUsersMap.get(user.project.id).push(user);
+function addTotalOccurrences(merged) {
+  return merged.map(project => {
+      const totalOccurrences = project.projects_users.reduce((acc, userProject) => acc + (userProject.occurrence || 0), 0);
+      return { ...project, totalOccurrences };
   });
-
-  coreProjects?.forEach(project => {
-    projectMap.set(project.id, { ...project });
-  });
-
-  myProjects?.forEach(project => {
-    if (projectMap.has(project.id)) {
-      projectMap.set(project.id, { ...projectMap.get(project.id), ...project });
-    } else {
-      projectMap.set(project.id, { ...project });
-    }
-  });
-
-  const mergedProjects = Array.from(projectMap.values()).map(project => ({
-    ...project,
-    projects_users: projectsUsersMap.get(project.id) || []
-  }));
-
-  return mergedProjects;
-};
+}
 
 const ProjectsProvider = ({ children }) => {
   const { user, setUser } = useContext(UserContext);
-
+  const [coreProjects, setCoreProjects] = useState(null);
+  const [myProjects, setMyProjects] = useState(null);
   const [mergedProjects, setMergedProjects] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const mergeProjects = (coreProjects, myProjects, projectsUsers) => {
+    const projectMap = new Map();
+    const projectsUsersMap = new Map();
+  
+    // Filter myProjects to include only those with ids present in coreProjects
+    const filteredCoreProjects = coreProjects?.filter(coreProject => 
+      myProjects?.some(myProject => myProject.id === coreProject.id)
+    );
+    // Create a map of project users
+    projectsUsers?.forEach(user => {
+      if (!projectsUsersMap.has(user.project.id)) {
+        projectsUsersMap.set(user.project.id, []);
+      }
+      projectsUsersMap.get(user.project.id).push(user);
+    });
+    // Create a map of core projects
+    filteredCoreProjects?.forEach(project => {
+      projectMap.set(project.id, { ...project });
+    });
+    // Merge the filtered my projects with core projects
+    myProjects?.forEach(project => {
+      if (projectMap.has(project.id)) {
+        projectMap.set(project.id, { ...projectMap.get(project.id), ...project });
+      } else {
+        projectMap.set(project.id, { ...project });
+      }
+    });
+    // Create the merged projects array
+    const mergedProjects = Array.from(projectMap.values()).map(project => ({
+      ...project,
+      projects_users: projectsUsersMap.get(project.id) || []
+    }));
+
+    return mergedProjects;
+  };
+  
+
+  const fetchAndUpdateProjects = async () => {
+    let authToken = user?.authToken;
+    try {
+      await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/42project?cursus_id=${user?.cursus_id}&update=true`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+    } catch (error) {
+      console.log('Failed to fetch and update projects', error);
+    } finally {
+      // setLoading(false);
+    }
+  };
 
   const fetchProjectsData = async () => {
     try {
@@ -52,7 +81,11 @@ const ProjectsProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${user.authToken}` }
         }),
       ]);
-      const merged = mergeProjects(coreProjectsResponse?.data, myProjectsResponse?.data, user?.projects_users);
+      let merged = mergeProjects(coreProjectsResponse?.data, myProjectsResponse?.data, user?.projects_users);
+      merged = addTotalOccurrences(merged);
+  
+      setCoreProjects(coreProjectsResponse?.data);
+      setMyProjects(myProjectsResponse?.data);
       setMergedProjects(merged);
       setLoading(false);
     } catch (error) {
@@ -60,14 +93,15 @@ const ProjectsProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     if (user)
+      // fetchAndUpdateProjects();
       fetchProjectsData();
   }, [setUser, user]);
 
   return (
-    <ProjectsContext.Provider value={{ mergedProjects, loading }}>
+    <ProjectsContext.Provider value={{ mergedProjects, coreProjects, myProjects, loading }}>
       {children}
     </ProjectsContext.Provider>
   );

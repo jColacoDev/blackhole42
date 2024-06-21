@@ -1,21 +1,35 @@
 .cards_scss {
-
-    .rank_section{
-        display: flex;
-        flex-direction: column;
-    }
-    .projects_section{
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1em;
-    }
     display: flex;
     flex-direction: column;
     gap: 1em;
     padding: 1em;
 
-    h2 {
-        color: var(--dark-white);
+    .rank_section{
+        display: flex;
+        flex-direction: column;
+    
+        &.finished{
+            color: #1eff00;
+        }
+        &.ongoing{
+            color: #ffe100;
+        }
+        &.unseen{
+            color: var(--dark-white);
+        }
+
+        h2 {
+
+            span {
+
+            }
+        }
+    }
+
+    .projects_section{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1em;
     }
     
     article{
@@ -69,6 +83,7 @@
             justify-content: space-between;
         }
     }
+
     .maxGrade{
         background-color: #00ffd080;
     }
