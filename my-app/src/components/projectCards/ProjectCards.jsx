@@ -16,12 +16,11 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
       projects?.forEach(project => {
         initialInputs[project?.id] = {
           grade: project?.grade || '',
-          start_date: project?.start_date ? new Date(project?.start_date).toISOString().slice(0, 10) : '',
           end_date: project?.end_date ? new Date(project?.end_date).toISOString().slice(0, 10) : ''
         };
       });
       setProjectInputs(initialInputs);
-      setProcessedProjects(processProjects());
+      setProcessedProjects(processProjectsByRank());
     }
 
   }, [projects]);
@@ -32,7 +31,7 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
     }
   }, [rank]);
 
-  const processProjects = () => {
+  const processProjectsByRank = () => {
     const projectsByRank = {};
   
     projects?.forEach(project => {
@@ -110,11 +109,11 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
   };
 
   const calculateNextBlackHoleDays = (project) => {
-    if (project?.grade && project?.start_date && project?.end_date) {
+    if (project?.grade && project?.end_date) {
       const nextBlackHoleDays = (Math.pow((xp + project?.xp) / 49980, 0.45) - Math.pow(xp / 49980, 0.45)) * 483;
       return nextBlackHoleDays.toFixed(2);
     }
-
+//here
     return 0;
   };
 
@@ -129,14 +128,13 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
   };
 
   const handleSave = async (projectId) => {
-    const { grade, start_date, end_date } = projectInputs[projectId];
+    const { grade, end_date } = projectInputs[projectId];
 
     try {
       await axios.put(
         `${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/myproject/${projectId}`,
         {
           grade,
-          start_date,
           end_date,
         },
         {
@@ -148,7 +146,7 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
 
       setProjects(prevProjects =>
         prevProjects.map(project =>
-          project?.id === projectId ? { ...project, grade, start_date, end_date } : project
+          project?.id === projectId ? { ...project, grade, end_date } : project
         )
       );
 
@@ -207,7 +205,7 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
                 const projectUsers = project ? project?.projects_users : [];
                 const projectUser = projectUsers[0];
                 const nextBlackHoleDays = calculateNextBlackHoleDays(project);
-                const { grade = '', start_date = '', end_date = '' } = projectInputs[projectId] || {};
+                const { grade = '', end_date = '' } = projectInputs[projectId] || {};
                 return (
                   <article key={projectId} className={ projectValidation(project?.maxGrade, projectUser)}>
                     <header>
@@ -234,20 +232,12 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
                           />
                         </li>
                         <li>
-                          <span>Start Date</span>
-                          <input
-                            type="date"
-                            value={start_date}
-                            onChange={(e) => handleInputChange(projectId, 'start_date', e.target.value)}
-                          />
-                        </li>
-                        <li>
                           <span>End Date</span>
                           <input
                             type="date"
                             value={end_date}
-                            disabled={!start_date}
-                            min={start_date}
+                            // disabled={false}
+                            // min={other_date}
                             onChange={(e) => handleInputChange(projectId, 'end_date', e.target.value)}
                           />
                         </li>
@@ -265,7 +255,7 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
                 const selectedProjectId = selectedProjects[group] || (groupProjects.length > 0 ? groupProjects[0].id : null);
                 const selectedProject = groupProjects.find(p => p.id === selectedProjectId);
                 const nextBlackHoleDays = calculateNextBlackHoleDays(selectedProject);
-                const { grade = '', start_date = '', end_date = '' } = projectInputs[selectedProjectId] || {};
+                const { grade = '', end_date = '' } = projectInputs[selectedProjectId] || {};
   
                 return (
                   <article key={group} className={selectedProject && selectedProject.projects_users.some(user => user.validated) ? 'green' : ''}>
@@ -297,20 +287,12 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
                         />
                       </li>
                       <li>
-                        <span>Start Date</span>
-                        <input
-                          type="date"
-                          value={start_date}
-                          onChange={(e) => handleInputChange(selectedProjectId, 'start_date', e.target.value)}
-                        />
-                      </li>
-                      <li>
                         <span>End Date</span>
                         <input
                           type="date"
                           value={end_date}
-                          disabled={!start_date}
-                          min={start_date}
+                          // disabled={!}
+                          // min={}
                           onChange={(e) => handleInputChange(selectedProjectId, 'end_date', e.target.value)}
                         />
                       </li>

@@ -8,7 +8,6 @@ import useAuth from "@/hooks/useAuth";
 import { UserContext } from './../../providers/UserContext';
 import { ProjectsContext } from './../../providers/ProjectsContext';
 import { formatToYYYYMMDD } from '@/utils/utils';
-import axios from 'axios';
 
 const BlackholePage = () => {
   useAuth();
