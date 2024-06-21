@@ -3,25 +3,39 @@ import React, { useEffect, useState, useContext } from 'react';
 import TopBanner from '@/components/topBanner/TopBanner';
 import Header from "@/components/header/Header";
 import ProjectCards from "@/components/projectCards/ProjectCards";
-import { levels } from "@/db";
 import useAuth from "@/hooks/useAuth";
 import { UserContext } from './../../providers/UserContext';
 import { ProjectsContext } from './../../providers/ProjectsContext';
 import { formatToYYYYMMDD } from '@/utils/utils';
+import axios from 'axios';
 
 const BlackholePage = () => {
   useAuth();
   const { user } = useContext(UserContext);
   const { mergedProjects, loading } = useContext(ProjectsContext);
 
+  const [levels, setLevels] = useState('');
   const [name, setName] = useState('');
-  const [rank, setrank] = useState(0);
+  const [rank, setRank] = useState(0);
   const [xp, setXp] = useState(0);
   const [weekly_days, setWeekly_days] = useState(0);
   const [daily_hours, setDaily_hours] = useState(0);
   const [kickoff_date, setKickoff_date] = useState('');
   const [level, setLevel] = useState(0);
   const [currentBlackHole, setCurrentBlackHole] = useState("");
+
+
+  const fetchLevels = async () => {
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user/levels`);
+      setLevels(res.data)
+    } catch (error) {
+      console.log('Failed to fetch levels', error);
+    } finally {
+      // setLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     if (user) {
@@ -33,11 +47,19 @@ const BlackholePage = () => {
       setCurrentBlackHole(formatToYYYYMMDD(user.cursus_user_blackholed_at) || "");
     }
   }, [user]);
-
+  
   useEffect(() => {
-    if (level)
-      calculateXpFromLevel(level);
-  }, [level]);
+      console.log(levels);
+  }, [levels]);
+  
+  useEffect(() => {
+      fetchLevels();
+  }, []);
+
+  // useEffect(() => {
+  //   if (level)
+  //     calculateXpFromLevel(level);
+  // }, [level]);
 
   const calculateXpFromLevel = (level) => {
     const integerPart = Math.floor(level);
@@ -67,13 +89,13 @@ const BlackholePage = () => {
         const { rank, start_date, end_date, grade, projects_users } = project;
         if(projects_users){
           if (!(projects_users[0]?.final_mark >= 100)) {
-            setrank(rank);
+            setRank(rank);
             return;
           }
         }
       }
       const maxRank = mergedProjects.reduce((max, project) => Math.max(max, project.rank), 0);
-      setrank(maxRank + 1);
+      setRank(maxRank + 1);
     }
   }, [loading, mergedProjects]);
 
@@ -99,6 +121,7 @@ const BlackholePage = () => {
             projects={mergedProjects} 
             xp={xp}
             rank={rank}
+            levels={levels}
           />
         </>
       )}
