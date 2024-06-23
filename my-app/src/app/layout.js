@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./globals.scss";
 import Footer from "@/components/footer/Footer";
 import Nav from "@/components/nav/Nav";
 import ProjectsProvider from "@/providers/ProjectsContext";

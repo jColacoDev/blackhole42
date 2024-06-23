@@ -8,6 +8,7 @@ export const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [levels, setLevels] = useState(null);
 
   const signOut = () => {
     setUser(null);
@@ -44,6 +45,17 @@ export const UserProvider = ({ children }) => {
     window.removeEventListener('message', handleAuthCallback);
   };
 
+  const fetchLevels = async (token) => {
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user/levels`);
+      const levelData = response.data;
+      // console.log(levelData);
+      setLevels(levelData);
+    } catch (error) {
+      console.error('Error fetching user data', error);
+    }
+  };
+
   const fetchUserData = async (token) => {
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user`, {
@@ -73,10 +85,11 @@ export const UserProvider = ({ children }) => {
       setUser({ ...authUserData, authToken });
       fetchUserData(authToken);
     }
+    fetchLevels();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, signOut, signIn42 }}>
+    <UserContext.Provider value={{ user, setUser, signOut, signIn42, levels }}>
       {children}
     </UserContext.Provider>
   );

@@ -11,10 +11,9 @@ import axios from 'axios';
 
 const BlackholePage = () => {
   useAuth();
-  const { user } = useContext(UserContext);
+  const { user, levels } = useContext(UserContext);
   const { mergedProjects, loading } = useContext(ProjectsContext);
 
-  const [levels, setLevels] = useState('');
   const [name, setName] = useState('');
   const [rank, setRank] = useState(0);
   const [xp, setXp] = useState(0);
@@ -23,19 +22,6 @@ const BlackholePage = () => {
   const [kickoff_date, setKickoff_date] = useState('');
   const [level, setLevel] = useState(0);
   const [currentBlackHole, setCurrentBlackHole] = useState("");
-
-
-  const fetchLevels = async () => {
-    try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_NODE_SERVER}/api/user/levels`);
-      setLevels(res.data)
-    } catch (error) {
-      console.log('Failed to fetch levels', error);
-    } finally {
-      // setLoading(false);
-    }
-  };
-
 
   useEffect(() => {
     if (user) {
@@ -48,18 +34,11 @@ const BlackholePage = () => {
     }
   }, [user]);
   
-  useEffect(() => {
-      console.log(levels);
-  }, [levels]);
-  
-  useEffect(() => {
-      fetchLevels();
-  }, []);
 
-  // useEffect(() => {
-  //   if (level)
-  //     calculateXpFromLevel(level);
-  // }, [level]);
+  useEffect(() => {
+    if (level && levels)
+      calculateXpFromLevel(level);
+  }, [level, levels]);
 
   const calculateXpFromLevel = (level) => {
     const integerPart = Math.floor(level);
@@ -67,7 +46,7 @@ const BlackholePage = () => {
     const levelPercentage = fractionalPart * 100;
 
     if (integerPart < 0 || integerPart >= levels.length)
-      throw new Error('Invalid level');
+      return;
 
     const currentLevel = levels[integerPart];
     const nextLevel = levels[integerPart + 1];
@@ -86,7 +65,7 @@ const BlackholePage = () => {
     if (!loading && Array.isArray(mergedProjects) && mergedProjects.length > 0) {
       mergedProjects.sort((a, b) => a.rank - b.rank);
       for (const project of mergedProjects) {
-        const { rank, start_date, end_date, grade, projects_users } = project;
+        const { rank, projects_users } = project;
         if(projects_users){
           if (!(projects_users[0]?.final_mark >= 100)) {
             setRank(rank);
@@ -118,7 +97,6 @@ const BlackholePage = () => {
           />
           <ProjectCards 
             user={user}
-            projects={mergedProjects} 
             xp={xp}
             rank={rank}
             levels={levels}

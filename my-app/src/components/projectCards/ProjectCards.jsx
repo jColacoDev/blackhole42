@@ -1,28 +1,32 @@
-"use client"
-import React, { useState, useEffect } from 'react';
+"use client";
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import "./styles.scss";
 import { daysBetweenDates, formatToYYYYMMDD } from '../../utils/utils';
+import { ProjectsContext } from '@/providers/ProjectsContext';
 
-export default function ProjectCards({ user, projects = [], setProjects, xp = 0, rank = 0 }) {
-  const [processedProjects, setProcessedProjects] = useState([]);
+export default function ProjectCards({ user, xp = 0, rank = 0, levels = [] }) {
+  const { mergedProjects: projects, loading, setMyProjects } = useContext(ProjectsContext);
+
+  const [processedProjectsByRank, setProcessedProjectsByRank] = useState([]);
   const [openRanks, setOpenRanks] = useState({});
   const [projectInputs, setProjectInputs] = useState({});
   const [selectedProjects, setSelectedProjects] = useState({});
+  const [showForm, setShowForm] = useState({});
 
   useEffect(() => {
-    if(projects){
+    if (projects) {
       const initialInputs = {};
-      projects?.forEach(project => {
+      projects.forEach(project => {
         initialInputs[project?.id] = {
+          eGrade: project?.eGrade || '',
           grade: project?.grade || '',
           end_date: project?.end_date ? new Date(project?.end_date).toISOString().slice(0, 10) : ''
         };
       });
       setProjectInputs(initialInputs);
-      setProcessedProjects(processProjectsByRank());
+      setProcessedProjectsByRank(processProjectsByRank());
     }
-
   }, [projects]);
 
   useEffect(() => {
@@ -100,6 +104,30 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
     return projectsByRank;
   };
   
+  const calculateTotalDays = (levels, xp) => {
+    let totalDays = 0;
+    let remainingXp = xp;
+  
+    for (let i = 0; i < levels.length; i++) {
+      const level = levels[i];
+      const xpForLevel = level.xp_total;
+      const daysForLevel = level.days;
+  
+      if (remainingXp >= xpForLevel) {
+        totalDays += daysForLevel;
+        remainingXp -= xpForLevel;
+      } else {
+        // Calculate the proportion of days for the remaining XP
+        const previousLevelXp = i > 0 ? levels[i - 1].xp_total : 0;
+        const xpDifference = xpForLevel - previousLevelXp;
+        const remainingDays = (remainingXp / xpDifference) * daysForLevel;
+        totalDays += remainingDays;
+        break; // Remaining XP has been fully used
+      }
+    }
+  
+    return totalDays;
+  };
 
   const toggleRank = (rank) => {
     setOpenRanks(prevState => ({
@@ -109,12 +137,17 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
   };
 
   const calculateNextBlackHoleDays = (project) => {
-    if (project?.grade && project?.end_date) {
-      const nextBlackHoleDays = (Math.pow((xp + project?.xp) / 49980, 0.45) - Math.pow(xp / 49980, 0.45)) * 483;
+    if( project?.eGrade < 100) return 0;
+
+    if (project?.grade && project?.end_date && project?.rank != rank) {
+      const rank = project.rank;
+      const previousXpTotal = levels.find(level => level.level === rank - 1)?.xp_total || 0;
+      const nextBlackHoleDays = (Math.pow((previousXpTotal + project.xp) / 49980, 0.45) - Math.pow(previousXpTotal / 49980, 0.45)) * 483;
+      return nextBlackHoleDays.toFixed(2);
+    } else {
+      const nextBlackHoleDays = (Math.pow((xp + (project?.xp * project?.eGrade / 100)) / 49980, 0.45) - Math.pow(xp / 49980, 0.45)) * 483;
       return nextBlackHoleDays.toFixed(2);
     }
-//here
-    return 0;
   };
 
   const handleInputChange = (projectId, field, value) => {
@@ -128,13 +161,14 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
   };
 
   const handleSave = async (projectId) => {
-    const { grade, end_date } = projectInputs[projectId];
+    const { grade, eGrade, end_date } = projectInputs[projectId];
 
     try {
       await axios.put(
         `${process.env.NEXT_PUBLIC_NODE_SERVER}/api/project/myproject/${projectId}`,
         {
           grade,
+          eGrade,
           end_date,
         },
         {
@@ -144,9 +178,9 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
         }
       );
 
-      setProjects(prevProjects =>
+      setMyProjects(prevProjects =>
         prevProjects.map(project =>
-          project?.id === projectId ? { ...project, grade, end_date } : project
+          project?.id === projectId ? { ...project, eGrade, end_date } : project
         )
       );
 
@@ -185,9 +219,16 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
     }
   }
 
+  const toggleForm = (projectId) => {
+    setShowForm(prevState => ({
+      ...prevState,
+      [projectId]: !prevState[projectId]
+    }));
+  };
+
   return (
     <section className="cards_scss">
-      {Object.values(processedProjects).map(rankInfo => (
+      {Object.values(processedProjectsByRank).map(rankInfo => (
         <div className={`rank_section ${rankInfo.status}`} key={rankInfo.rank}>
           <h2 onClick={() => toggleRank(rankInfo?.rank)}>Rank {rankInfo?.rank} <br/>
             {rankInfo?.totalOccurrences > 0 && <>
@@ -205,7 +246,7 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
                 const projectUsers = project ? project?.projects_users : [];
                 const projectUser = projectUsers[0];
                 const nextBlackHoleDays = calculateNextBlackHoleDays(project);
-                const { grade = '', end_date = '' } = projectInputs[projectId] || {};
+                const { grade = '', eGrade = '', end_date = '' } = projectInputs[projectId] || {};
                 return (
                   <article key={projectId} className={ projectValidation(project?.maxGrade, projectUser)}>
                     <header>
@@ -215,34 +256,38 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
                       <li><span>Retries: </span><span>{projectUser?.occurrence ? projectUser?.occurrence : 0}</span></li>
                       <li><span>Project XP: </span><span>{project?.xp}</span></li>
                       <li><span>Grade: </span><span>{projectUser?.final_mark ? projectUser?.final_mark : 0}</span></li>
-                      <li><span>Gained XP: </span><span>{((project?.xp * grade) / 100).toFixed(0)}</span></li>
-                      <li><span>Gained BH days: </span><span>{nextBlackHoleDays}</span></li>
+                      <li><span>Gained XP: </span><span> {projectUser?.final_mark ? ((project?.xp * projectUser?.final_mark) / 100).toFixed(0) : ((project?.xp * grade) / 100).toFixed(0)}</span></li>
+                      {projectUser?.final_mark > 99 && <li><span>Finished at: </span><span>{formatToYYYYMMDD(projectUser?.marked_at)}</span></li>}
+
                     </ul>
 
                     {!(projectUser?.final_mark > 99) && <>
-                      <ul>
-                        <li>
-                          <span>Expected Grade</span>
-                          <input
-                            type="number"
-                            value={grade}
-                            min="0"
-                            max={project?.maxGrade}
-                            onChange={(e) => handleInputChange(projectId, 'grade', e.target.value)}
-                          />
-                        </li>
-                        <li>
-                          <span>End Date</span>
-                          <input
-                            type="date"
-                            value={end_date}
-                            // disabled={false}
-                            // min={other_date}
-                            onChange={(e) => handleInputChange(projectId, 'end_date', e.target.value)}
-                          />
-                        </li>
-                      </ul>
-                      <button onClick={() => handleSave(projectId)}>Project Done</button>
+                      <button onClick={() => toggleForm(projectId)}>Project Planner</button>
+                      <div className={`form-container ${showForm[projectId] ? 'visible' : ''}`}>
+                        <ul>
+                        {rankInfo.status != "finished" &&
+                          <li><span>Blackhole days: </span><span>{nextBlackHoleDays}</span></li>}
+                          <li>
+                            <span>Expected Grade</span>
+                            <input
+                              type="number"
+                              value={eGrade}
+                              min="0"
+                              max={project?.maxGrade}
+                              onChange={(e) => handleInputChange(projectId, 'eGrade', e.target.value)}
+                            />
+                          </li>
+                          <li>
+                            <span>Finish Date</span>
+                            <input
+                              type="date"
+                              value={end_date}
+                              onChange={(e) => handleInputChange(projectId, 'end_date', e.target.value)}
+                            />
+                          </li>
+                        </ul>
+                        <button className="lf_submit" onClick={() => handleSave(projectId)}>Plan Project</button>
+                      </div>
                     </>}
                   </article>
                 );
@@ -255,7 +300,7 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
                 const selectedProjectId = selectedProjects[group] || (groupProjects.length > 0 ? groupProjects[0].id : null);
                 const selectedProject = groupProjects.find(p => p.id === selectedProjectId);
                 const nextBlackHoleDays = calculateNextBlackHoleDays(selectedProject);
-                const { grade = '', end_date = '' } = projectInputs[selectedProjectId] || {};
+                const { grade = '', eGrade = '', end_date = '' } = projectInputs[selectedProjectId] || {};
   
                 return (
                   <article key={group} className={selectedProject && selectedProject.projects_users.some(user => user.validated) ? 'green' : ''}>
@@ -271,33 +316,36 @@ export default function ProjectCards({ user, projects = [], setProjects, xp = 0,
                       ))}
                     </header>
                     <ul>
+                      <li><span>Retries: </span><span>{selectedProject?.occurrence ? selectedProject?.occurrence : 0}</span></li>
                       <li><span>Project XP: </span><span>{selectedProject?.xp}</span></li>
+                      <li><span>Grade: </span><span>{selectedProject?.final_mark ? selectedProject?.final_mark : 0}</span></li>
                       <li><span>Gained XP: </span><span>{((selectedProject?.xp * grade) / 100).toFixed(0)}</span></li>
-                      <li><span>Gained BH days: </span><span>{nextBlackHoleDays}</span></li>
                     </ul>
-                    <ul>
-                      <li>
-                        <span>Grade</span>
-                        <input
-                          type="number"
-                          value={grade}
-                          min="0"
-                          max={selectedProject?.maxGrade}
-                          onChange={(e) => handleInputChange(selectedProjectId, 'grade', e.target.value)}
-                        />
-                      </li>
-                      <li>
-                        <span>End Date</span>
-                        <input
-                          type="date"
-                          value={end_date}
-                          // disabled={!}
-                          // min={}
-                          onChange={(e) => handleInputChange(selectedProjectId, 'end_date', e.target.value)}
-                        />
-                      </li>
-                    </ul>
-                    <button onClick={() => handleSave(selectedProjectId)}>Project Done</button>
+                    <button onClick={() => toggleForm(selectedProjectId)}>Project Planner</button>
+                    <div className={`form-container ${showForm[selectedProjectId] ? 'visible' : ''}`}>
+                      <ul>
+                        <li>
+                          {selectedProject?.status != "finished" && <li><span>Blackhole days: </span><span>{nextBlackHoleDays}</span></li>}
+                          <span>Expected Grade</span>
+                          <input
+                            type="number"
+                            value={eGrade}
+                            min="0"
+                            max={selectedProject?.maxGrade}
+                            onChange={(e) => handleInputChange(selectedProjectId, 'eGrade', e.target.value)}
+                          />
+                        </li>
+                        <li>
+                          <span>Finish Date</span>
+                          <input
+                            type="date"
+                            value={end_date}
+                            onChange={(e) => handleInputChange(selectedProjectId, 'end_date', e.target.value)}
+                          />
+                        </li>
+                      </ul>
+                      <button className="lf_submit" onClick={() => handleSave(selectedProjectId)}>Plan Project</button>
+                    </div>
                   </article>
                 );
               }

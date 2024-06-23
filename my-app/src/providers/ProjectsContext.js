@@ -24,9 +24,10 @@ const ProjectsProvider = ({ children }) => {
     const projectsUsersMap = new Map();
   
     // Filter myProjects to include only those with ids present in coreProjects
-    const filteredCoreProjects = coreProjects?.filter(coreProject => 
+    const filteredCoreProjects = coreProjects?.filter(coreProject =>
       myProjects?.some(myProject => myProject.id === coreProject.id)
     );
+  
     // Create a map of project users
     projectsUsers?.forEach(user => {
       if (!projectsUsersMap.has(user.project.id)) {
@@ -34,10 +35,12 @@ const ProjectsProvider = ({ children }) => {
       }
       projectsUsersMap.get(user.project.id).push(user);
     });
+  
     // Create a map of core projects
     filteredCoreProjects?.forEach(project => {
       projectMap.set(project.id, { ...project });
     });
+  
     // Merge the filtered my projects with core projects
     myProjects?.forEach(project => {
       if (projectMap.has(project.id)) {
@@ -46,12 +49,23 @@ const ProjectsProvider = ({ children }) => {
         projectMap.set(project.id, { ...project });
       }
     });
+  
     // Create the merged projects array
-    const mergedProjects = Array.from(projectMap.values()).map(project => ({
-      ...project,
-      projects_users: projectsUsersMap.get(project.id) || []
-    }));
-
+    const mergedProjects = Array.from(projectMap.values()).map(project => {
+      const projectUsers = projectsUsersMap.get(project.id) || [];
+      const grade = projectUsers.some(user => user.final_mark > 99) ? 
+                    Math.max(...projectUsers.map(user => user.final_mark).filter(mark => mark > 99)) : 
+                    undefined;
+  
+      return {
+        ...project,
+        projects_users: projectUsers,
+        grade
+      };
+    });
+  
+    console.log(mergedProjects);
+  
     return mergedProjects;
   };
   
@@ -81,12 +95,12 @@ const ProjectsProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${user.authToken}` }
         }),
       ]);
-      let merged = mergeProjects(coreProjectsResponse?.data, myProjectsResponse?.data, user?.projects_users);
-      merged = addTotalOccurrences(merged);
-  
+      // let merged = mergeProjects(coreProjectsResponse?.data, myProjectsResponse?.data, user?.projects_users);
+      // merged = addTotalOccurrences(merged);
+
       setCoreProjects(coreProjectsResponse?.data);
       setMyProjects(myProjectsResponse?.data);
-      setMergedProjects(merged);
+  
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch projects data:', error);
@@ -100,8 +114,15 @@ const ProjectsProvider = ({ children }) => {
       fetchProjectsData();
   }, [setUser, user]);
 
+  useEffect(() => {
+    let merged = mergeProjects(coreProjects, myProjects, user?.projects_users);
+      merged = addTotalOccurrences(merged);
+      setMergedProjects(merged);
+      
+  }, [myProjects, coreProjects, user?.projects_users]);
+
   return (
-    <ProjectsContext.Provider value={{ mergedProjects, coreProjects, myProjects, loading }}>
+    <ProjectsContext.Provider value={{ mergedProjects, coreProjects, myProjects, loading, setMyProjects }}>
       {children}
     </ProjectsContext.Provider>
   );

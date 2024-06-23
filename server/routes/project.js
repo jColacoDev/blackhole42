@@ -105,11 +105,13 @@ router.get('/coreproject', async (req, res) => {
 
 router.put('/myproject/:projectId', requireAuth, async (req, res) => {
   const projectId = req.params.projectId;
-  const { grade, start_date, end_date } = req.body;
+  const { grade, eGrade, end_date } = req.body;
+
+  console.log("req.body", req.body)
   try {
     const updatedProject = await MyProject.findOneAndUpdate(
       { id: projectId },
-      { grade, start_date, end_date },
+      { grade, eGrade, end_date },
       { new: true }
     );
     if (!updatedProject) {
