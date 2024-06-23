@@ -64,8 +64,6 @@ const ProjectsProvider = ({ children }) => {
       };
     });
   
-    console.log(mergedProjects);
-  
     return mergedProjects;
   };
   
@@ -79,7 +77,7 @@ const ProjectsProvider = ({ children }) => {
         },
       });
     } catch (error) {
-      console.log('Failed to fetch and update projects', error);
+      console.error('Failed to fetch and update projects');
     } finally {
       // setLoading(false);
     }

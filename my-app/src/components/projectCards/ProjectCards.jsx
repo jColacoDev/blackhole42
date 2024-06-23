@@ -137,9 +137,9 @@ export default function ProjectCards({ user, xp = 0, rank = 0, levels = [] }) {
   };
 
   const calculateNextBlackHoleDays = (project) => {
-    if( project?.eGrade < 100) return 0;
+    if( !project?.eGrade || project?.eGrade < 100) return 0;
 
-    if (project?.grade && project?.end_date && project?.rank != rank) {
+    if (project?.eGrade && project?.end_date && project?.rank != rank) {
       const rank = project.rank;
       const previousXpTotal = levels.find(level => level.level === rank - 1)?.xp_total || 0;
       const nextBlackHoleDays = (Math.pow((previousXpTotal + project.xp) / 49980, 0.45) - Math.pow(previousXpTotal / 49980, 0.45)) * 483;
@@ -300,7 +300,7 @@ export default function ProjectCards({ user, xp = 0, rank = 0, levels = [] }) {
                 const selectedProjectId = selectedProjects[group] || (groupProjects.length > 0 ? groupProjects[0].id : null);
                 const selectedProject = groupProjects.find(p => p.id === selectedProjectId);
                 const nextBlackHoleDays = calculateNextBlackHoleDays(selectedProject);
-                const { grade = '', eGrade = '', end_date = '' } = projectInputs[selectedProjectId] || {};
+                const { eGrade = '', end_date = '' } = projectInputs[selectedProjectId] || {};
   
                 return (
                   <article key={group} className={selectedProject && selectedProject.projects_users.some(user => user.validated) ? 'green' : ''}>
@@ -316,10 +316,12 @@ export default function ProjectCards({ user, xp = 0, rank = 0, levels = [] }) {
                       ))}
                     </header>
                     <ul>
-                      <li><span>Retries: </span><span>{selectedProject?.occurrence ? selectedProject?.occurrence : 0}</span></li>
+                      <li><span>Retries: </span><span>{selectedProject?.projects_users[0]?.occurrence ? selectedProject?.projects_users[0]?.occurrence : 0}</span></li>
                       <li><span>Project XP: </span><span>{selectedProject?.xp}</span></li>
-                      <li><span>Grade: </span><span>{selectedProject?.final_mark ? selectedProject?.final_mark : 0}</span></li>
-                      <li><span>Gained XP: </span><span>{((selectedProject?.xp * grade) / 100).toFixed(0)}</span></li>
+                      <li><span>Grade: </span><span>{selectedProject?.projects_users[0]?.final_mark ? selectedProject?.projects_users[0]?.final_mark : 0}</span></li>
+                      <li><span>Gained XP: </span><span>{selectedProject?.grade > 0 ? (((selectedProject?.xp * selectedProject?.grade) / 100).toFixed(0)): 0}</span></li>
+                      {console.log(selectedProject)}
+                      {selectedProject?.projects_users[0]?.final_mark > 99 && <li><span>Finished at: </span><span>{formatToYYYYMMDD(selectedProject?.projects_users[0]?.marked_at)}</span></li>}
                     </ul>
                     <button onClick={() => toggleForm(selectedProjectId)}>Project Planner</button>
                     <div className={`form-container ${showForm[selectedProjectId] ? 'visible' : ''}`}>
